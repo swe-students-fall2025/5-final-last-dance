@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Last Dance Job Board</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  </head>
+  <body>
+    <header class="hero">
+      <div class="hero__content">
+        <h1>TODO Website Name</h1>
+        <p class="hero__subtitle">
+          We fetch new openings, score them with our algorithm, and keep a
+          living list so you don't have to.
+        </p>
+      </div>
+    </header>
+
+    <main class="content">
+      <section class="discover">
+        <div class="section-heading">
+          <h2>Recommended for you</h2>
+          <p>High-signal matches from our recommender.</p>
+        </div>
+        <div class="cards cards--recommendations">
+          {% for job in recommendations %}
+          <article class="card">
+            <button class="card__favorite" type="button" aria-label="Favorite job">♡</button>
+            <div class="card__meta">
+              <span class="tag">Match {{ job.match_score }}%</span>
+            </div>
+            <h3>{{ job.title }}</h3>
+            <p class="card__summary">Job description will be here.</p>
+            <p class="card__location">Location: {{ job.location }}</p>
+            <div class="tag-group">
+              {% for tag in job.tags %}
+              <span class="tag tag--pill">{{ tag }}</span>
+              {% endfor %}
+            </div>
+            <div class="card__footer">
+              <span class="tag tag--soft">{{ job.type }}</span>
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="board">
+        <div class="section-heading">
+          <h2>Live job board</h2>
+          <p>Row data coming straight from the scraper + transform pipeline.</p>
+        </div>
+        <div class="cards">
+          {% for job in job_board %}
+          <article class="card card--board">
+            <button class="card__favorite" type="button" aria-label="Favorite job">♡</button>
+            <header>
+              <div>
+                <h3>{{ job.title }}</h3>
+              </div>
+              <span class="tag tag--secondary">{{ job.posted }}</span>
+            </header>
+            <p class="card__summary">Job description will be here.</p>
+            <p class="card__location">Location: {{ job.location }}</p>
+            <div class="tag-group">
+              {% for tag in job.tags %}
+              <span class="tag tag--pill">{{ tag }}</span>
+              {% endfor %}
+            </div>
+            <div class="card__footer">
+              <span class="tag tag--soft">{{ job.type }}</span>
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
