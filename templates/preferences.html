@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Preferences - Last Dance{% endblock %}
+
+{% block content %}
+  <section class="preferences">
+    <div class="section-heading">
+      <h2>Your Preferences</h2>
+      <p>Set your preferences for job recommendations.</p>
+    </div>
+
+    <!-- Tab Navigation -->
+    <nav class="tabs">
+      <a href="{{ url_for('preferences', user_id=user_id, tab='companies') }}" 
+         class="tab {% if active_tab == 'companies' %}tab--active{% endif %}">Companies</a>
+      <a href="{{ url_for('preferences', user_id=user_id, tab='roles') }}" 
+         class="tab {% if active_tab == 'roles' %}tab--active{% endif %}">Roles</a>
+      <a href="{{ url_for('preferences', user_id=user_id, tab='locations') }}" 
+         class="tab {% if active_tab == 'locations' %}tab--active{% endif %}">Locations</a>
+      <a href="{{ url_for('preferences', user_id=user_id, tab='job_types') }}" 
+         class="tab {% if active_tab == 'job_types' %}tab--active{% endif %}">Job Types</a>
+    </nav>
+
+    <!-- Companies Tab -->
+    {% if active_tab == 'companies' %}
+    <form method="POST" action="{{ url_for('save_company_preferences', user_id=user_id) }}">
+      <div class="pref-section">
+        <h3>Companies</h3>
+        <p class="pref-hint">Select your preference tier for each company.</p>
+        <div class="pref-grid">
+          {% for company in companies %}
+          <div class="pref-item">
+            <label>{{ company }}</label>
+            <select name="company_{{ company }}">
+              {% for tier in tiers %}
+              <option value="{{ tier.value }}" 
+                      {% if company_prefs.get(company, default_tier) == tier.value %}selected{% endif %}>
+                {{ tier.label }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <button type="submit" class="btn-save">Save Companies</button>
+    </form>
+    {% endif %}
+
+    <!-- Roles Tab -->
+    {% if active_tab == 'roles' %}
+    <form method="POST" action="{{ url_for('save_role_preferences', user_id=user_id) }}">
+      <div class="pref-section">
+        <h3>Roles</h3>
+        <p class="pref-hint">Select your preference tier for each role.</p>
+        <div class="pref-grid">
+          {% for role in roles %}
+          <div class="pref-item">
+            <label>{{ role }}</label>
+            <select name="role_{{ role }}">
+              {% for tier in tiers %}
+              <option value="{{ tier.value }}" 
+                      {% if role_prefs.get(role, default_tier) == tier.value %}selected{% endif %}>
+                {{ tier.label }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <button type="submit" class="btn-save">Save Roles</button>
+    </form>
+    {% endif %}
+
+    <!-- Locations Tab -->
+    {% if active_tab == 'locations' %}
+    <form method="POST" action="{{ url_for('save_location_preferences', user_id=user_id) }}">
+      <div class="pref-section">
+        <h3>Locations</h3>
+        <p class="pref-hint">Select your preference tier for each location.</p>
+        <div class="pref-grid">
+          {% for location in locations %}
+          <div class="pref-item">
+            <label>{{ location }}</label>
+            <select name="location_{{ location }}">
+              {% for tier in tiers %}
+              <option value="{{ tier.value }}" 
+                      {% if location_prefs.get(location, default_tier) == tier.value %}selected{% endif %}>
+                {{ tier.label }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <button type="submit" class="btn-save">Save Locations</button>
+    </form>
+    {% endif %}
+
+    <!-- Job Types Tab -->
+    {% if active_tab == 'job_types' %}
+    <form method="POST" action="{{ url_for('save_job_type_preferences', user_id=user_id) }}">
+      <div class="pref-section">
+        <h3>Job Types</h3>
+        <p class="pref-hint">Select all that interest you.</p>
+        <div class="pref-checkboxes">
+          {% for job_type in job_types %}
+          <label class="checkbox-label">
+            <input type="checkbox" name="job_types" value="{{ job_type }}"
+                   {% if job_type in job_type_prefs %}checked{% endif %} />
+            {{ job_type }}
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+      <button type="submit" class="btn-save">Save Job Types</button>
+    </form>
+    {% endif %}
+
+  </section>
+{% endblock %}

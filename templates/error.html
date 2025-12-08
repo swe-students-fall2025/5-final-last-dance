@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Error - Last Dance{% endblock %}
+
+{% block content %}
+  <section class="error-page">
+    <div class="section-heading">
+      <h2>Something went wrong</h2>
+      <p>{{ error }}</p>
+    </div>
+    <a href="{{ url_for('home') }}">← Back to home</a>
+  </section>
+{% endblock %}
+
