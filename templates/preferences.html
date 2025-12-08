@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Preferences - Last Dance{% endblock %}
+
+{% block content %}
+  <section class="preferences">
+    <div class="section-heading">
+      <h2>Your Preferences</h2>
+      <p>Rank your top choices (1-10, unique numbers only).</p>
+    </div>
+
+    <!-- Error messages -->
+    {% if errors %}
+    <div class="error-box" style="background: #fee; border: 1px solid #c00; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+      <ul style="color: #c00; margin: 0; padding-left: 1.5rem;">
+        {% for error in errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('save_preferences', user_id=user_id) }}">
+      
+      <!-- Company Rankings -->
+      <div class="pref-section">
+        <h3>Companies</h3>
+        <p class="pref-hint">Rank 1-10 (1 = top choice). Leave blank if no preference.</p>
+        <div class="pref-grid">
+          {% for company in companies %}
+          <div class="pref-item">
+            <label>{{ company }}</label>
+            <input type="number" name="company_{{ company }}" min="1" max="10" 
+                   value="{{ company_prefs.get(company, '') }}" />
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Role Rankings -->
+      <div class="pref-section">
+        <h3>Roles</h3>
+        <p class="pref-hint">Rank 1-10 (1 = top choice). Leave blank if no preference.</p>
+        <div class="pref-grid">
+          {% for role in roles %}
+          <div class="pref-item">
+            <label>{{ role }}</label>
+            <input type="number" name="role_{{ role }}" min="1" max="10" 
+                   value="{{ role_prefs.get(role, '') }}" />
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Location Rankings -->
+      <div class="pref-section">
+        <h3>Locations</h3>
+        <p class="pref-hint">Rank 1-10 (1 = top choice). Leave blank if no preference.</p>
+        <div class="pref-grid">
+          {% for location in locations %}
+          <div class="pref-item">
+            <label>{{ location }}</label>
+            <input type="number" name="location_{{ location }}" min="1" max="10" 
+                   value="{{ location_prefs.get(location, '') }}" />
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Job Type Selection -->
+      <div class="pref-section">
+        <h3>Job Types</h3>
+        <p class="pref-hint">Select all that interest you.</p>
+        <div class="pref-checkboxes">
+          {% for job_type in job_types %}
+          <label class="checkbox-label">
+            <input type="checkbox" name="job_types" value="{{ job_type }}"
+                   {% if job_type in job_type_prefs %}checked{% endif %} />
+            {{ job_type }}
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <button type="submit" class="btn-save">Save Preferences</button>
+    </form>
+  </section>
+{% endblock %}
+
