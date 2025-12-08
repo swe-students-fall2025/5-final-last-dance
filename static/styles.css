@@ -188,6 +188,34 @@ main {
   margin: 0 auto;
 }
 
+/* Tab Navigation */
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+}
+
+.tab {
+  padding: 0.75rem 1.25rem;
+  text-decoration: none;
+  color: var(--muted);
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all 0.15s ease;
+}
+
+.tab:hover {
+  color: var(--text);
+}
+
+.tab--active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
 .pref-section {
   background: var(--card);
   border-radius: 1rem;
@@ -229,17 +257,17 @@ main {
   font-weight: 500;
 }
 
-.pref-item input[type="number"] {
-  width: 50px;
-  padding: 0.4rem;
+.pref-item select {
+  padding: 0.4rem 0.6rem;
   border: 1px solid var(--border);
   border-radius: 0.4rem;
-  text-align: center;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   background: var(--card);
+  cursor: pointer;
+  min-width: 120px;
 }
 
-.pref-item input[type="number"]:focus {
+.pref-item select:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 2px rgba(125, 95, 255, 0.15);
