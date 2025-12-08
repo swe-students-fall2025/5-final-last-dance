@@ -99,7 +99,7 @@ def create_app():
         company_rankings = {}
         for company in COMPANIES:
             rank = request.form.get(f"company_{company}")
-            if rank and rank.isdigit() and 1 <= int(rank) <= 10:
+            if rank and rank.isdigit() and 1 <= int(rank) <= len(COMPANIES):
                 company_rankings[company] = int(rank)
 
         # Check for duplicate company ranks
@@ -110,7 +110,7 @@ def create_app():
         role_rankings = {}
         for role in ROLES:
             rank = request.form.get(f"role_{role}")
-            if rank and rank.isdigit() and 1 <= int(rank) <= 10:
+            if rank and rank.isdigit() and 1 <= int(rank) <= len(ROLES):
                 role_rankings[role] = int(rank)
 
         # Check for duplicate role ranks
@@ -121,7 +121,7 @@ def create_app():
         location_rankings = {}
         for location in LOCATIONS:
             rank = request.form.get(f"location_{location}")
-            if rank and rank.isdigit() and 1 <= int(rank) <= 10:
+            if rank and rank.isdigit() and 1 <= int(rank) <= len(LOCATIONS):
                 location_rankings[location] = int(rank)
 
         # Check for duplicate location ranks

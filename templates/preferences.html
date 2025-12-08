@@ -11,8 +11,8 @@
 
     <!-- Error messages -->
     {% if errors %}
-    <div class="error-box" style="background: #fee; border: 1px solid #c00; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
-      <ul style="color: #c00; margin: 0; padding-left: 1.5rem;">
+    <div class="error-box">
+      <ul>
         {% for error in errors %}
         <li>{{ error }}</li>
         {% endfor %}
@@ -25,12 +25,12 @@
       <!-- Company Rankings -->
       <div class="pref-section">
         <h3>Companies</h3>
-        <p class="pref-hint">Rank 1-10 (1 = top choice). Leave blank if no preference.</p>
+        <p class="pref-hint">Rank 1-{{ companies|length }} (1 = top choice). Leave blank if no preference.</p>
         <div class="pref-grid">
           {% for company in companies %}
           <div class="pref-item">
             <label>{{ company }}</label>
-            <input type="number" name="company_{{ company }}" min="1" max="10" 
+            <input type="number" name="company_{{ company }}" min="1" max="{{ companies|length }}" 
                    value="{{ company_prefs.get(company, '') }}" />
           </div>
           {% endfor %}
@@ -40,12 +40,12 @@
       <!-- Role Rankings -->
       <div class="pref-section">
         <h3>Roles</h3>
-        <p class="pref-hint">Rank 1-10 (1 = top choice). Leave blank if no preference.</p>
+        <p class="pref-hint">Rank 1-{{ roles|length }} (1 = top choice). Leave blank if no preference.</p>
         <div class="pref-grid">
           {% for role in roles %}
           <div class="pref-item">
             <label>{{ role }}</label>
-            <input type="number" name="role_{{ role }}" min="1" max="10" 
+            <input type="number" name="role_{{ role }}" min="1" max="{{ roles|length }}" 
                    value="{{ role_prefs.get(role, '') }}" />
           </div>
           {% endfor %}
@@ -55,12 +55,12 @@
       <!-- Location Rankings -->
       <div class="pref-section">
         <h3>Locations</h3>
-        <p class="pref-hint">Rank 1-10 (1 = top choice). Leave blank if no preference.</p>
+        <p class="pref-hint">Rank 1-{{ locations|length }} (1 = top choice). Leave blank if no preference.</p>
         <div class="pref-grid">
           {% for location in locations %}
           <div class="pref-item">
             <label>{{ location }}</label>
-            <input type="number" name="location_{{ location }}" min="1" max="10" 
+            <input type="number" name="location_{{ location }}" min="1" max="{{ locations|length }}" 
                    value="{{ location_prefs.get(location, '') }}" />
           </div>
           {% endfor %}
