@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import datetime
+from datetime import timezone
 
 from flask import Flask, render_template, request, redirect, url_for
 import pymongo
@@ -46,6 +47,66 @@ TIERS = [
 
 DEFAULT_TIER = 3
 
+def score_jobs_for_user(db, user_id: str, jobs):
+    now = datetime.datetime.now(timezone.utc)
+
+    company_prefs = {
+        p["company"]: p["rank"]
+        for p in db.company_preferences.find({"user_id": user_id})
+    }
+    location_prefs = {
+        p["location"]: p["rank"]
+        for p in db.location_preferences.find({"user_id": user_id})
+    }
+    role_prefs = {
+        p["role"]: p["rank"]
+        for p in db.role_preferences.find({"user_id": user_id})
+    }
+    job_type_pref_doc = db.job_type_preferences.find_one({"user_id": user_id})
+    job_type_prefs = set(job_type_pref_doc.get("types", [])) if job_type_pref_doc else set()
+
+    scored_jobs = []
+
+    for job in jobs:
+        score = 0
+
+        company = job.get("company")
+        if company in company_prefs:
+            rank = company_prefs[company]
+            score += (5 - rank) * 22
+
+        location = job.get("location")
+        if location in location_prefs:
+            rank = location_prefs[location]
+            score += (5 - rank) * 18
+
+        role = job.get("role") or job.get("title")
+        for canonical_role in ROLES:
+            if canonical_role.lower() in str(role).lower():
+                rank = role_prefs.get(canonical_role)
+                if rank:
+                    score += (5 - rank) * 20
+                break
+
+        jtype = job.get("type")
+        if jtype in job_type_prefs:
+            score += 15
+
+        posted_dt = job.get("posted_date")
+        if isinstance(posted_dt, datetime.datetime):
+            days_old = max(0, (now - posted_dt).days)
+            recency_boost = max(0, 25 - days_old)
+            score += recency_boost
+
+        score = max(0, min(100, score))
+        job["match_score"] = int(score)
+
+        if "posted" not in job and isinstance(job.get("posted_date"), datetime.datetime):
+            job["posted"] = job["posted_date"].strftime("%b %-d")
+
+        scored_jobs.append(job)
+
+    return scored_jobs
 
 def create_app():
     """Create and configure the Flask application."""
@@ -62,9 +123,33 @@ def create_app():
 
     @app.route("/")
     def home():
-        """Route for the home page. Displays job board."""
-        jobs = list(db.jobs.find({}).sort("posted_date", -1))
-        return render_template("index.html", job_board=jobs, recommendations=jobs[:3])
+        user_id = request.args.get("user_id", "testuser")
+
+        jobs_cursor = db.jobs.find({}).sort("posted_date", -1)
+        jobs = list(jobs_cursor)
+
+        jobs = score_jobs_for_user(db, user_id, jobs)
+
+        recommended_jobs = sorted(jobs, key=lambda j: j.get("match_score", 0), reverse=True)[:8]
+
+        trending_jobs = sorted(
+            jobs,
+            key=lambda j: (
+                j.get("scraped_at")
+                or j.get("posted_date")
+                or datetime.datetime(1970, 1, 1, tzinfo=timezone.utc)
+            ),
+            reverse=True,
+        )[:10]
+
+        return render_template(
+            "index.html",
+            user_id=user_id,
+            job_board=jobs,
+            recommendations=recommended_jobs,
+            trending_jobs=trending_jobs,
+            job_types=JOB_TYPES,
+        )
 
     @app.route("/preferences/<user_id>")
     def preferences(user_id):
@@ -95,7 +180,7 @@ def create_app():
     @app.route("/preferences/<user_id>/companies", methods=["POST"])
     def save_company_preferences(user_id):
         """Save company preferences."""
-        now = datetime.datetime.now(datetime.UTC)
+        now = datetime.datetime.now(timezone.utc)
         db.company_preferences.delete_many({"user_id": user_id})
         
         for company in COMPANIES:
@@ -113,7 +198,7 @@ def create_app():
     @app.route("/preferences/<user_id>/roles", methods=["POST"])
     def save_role_preferences(user_id):
         """Save role preferences."""
-        now = datetime.datetime.now(datetime.UTC)
+        now = datetime.datetime.now(timezone.utc)
         db.role_preferences.delete_many({"user_id": user_id})
         
         for role in ROLES:
@@ -131,7 +216,7 @@ def create_app():
     @app.route("/preferences/<user_id>/locations", methods=["POST"])
     def save_location_preferences(user_id):
         """Save location preferences."""
-        now = datetime.datetime.now(datetime.UTC)
+        now = datetime.datetime.now(timezone.utc)
         db.location_preferences.delete_many({"user_id": user_id})
         
         for location in LOCATIONS:
@@ -151,7 +236,7 @@ def create_app():
         """Save job type preferences."""
         selected_job_types = request.form.getlist("job_types")
 
-        now = datetime.datetime.now(datetime.UTC)
+        now = datetime.datetime.now(timezone.utc)
         db.job_type_preferences.delete_many({"user_id": user_id})
         if selected_job_types:
             db.job_type_preferences.insert_one({

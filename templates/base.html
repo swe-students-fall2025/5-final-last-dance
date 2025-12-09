@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
   </head>
   <body>
-    <!-- Navigation Toggle (CSS-only hamburger menu) -->
+    <!-- Navigation Toggle -->
     <input type="checkbox" id="nav-toggle" class="nav-toggle" />
     <label for="nav-toggle" class="nav-hamburger">☰</label>
     <label for="nav-toggle" class="nav-overlay"></label>
@@ -22,18 +22,63 @@
       </nav>
     </aside>
 
-    <header class="hero">
-      <div class="hero__content">
-        <h1>TODO Website Name</h1>
+    <header class="hero hero--pitchdeck">
+      <div class="hero__left">
+        <span class="hero__badge">Pitchdeck</span>
+        <h1 class="hero__title">Your curated deck of high-signal roles.</h1>
         <p class="hero__subtitle">
-          We fetch new openings, score them with our algorithm, and keep a
-          living list so you don't have to.
+          Pitchdeck scrapes top tech companies, ranks openings to your preferences,
+          and keeps a live shortlist so you can spend time on the right applications.
         </p>
+
+        <div class="hero__actions">
+          <a href="{{ url_for('home') }}" class="btn-primary">Browse jobs</a>
+          <a href="{{ url_for('preferences', user_id='testuser') }}" class="btn-secondary">
+            Edit preferences
+          </a>
+        </div>
+
+        <div class="hero__meta">
+          <div class="hero-pill">
+            <span class="hero-pill__label">Live listings</span>
+            <span class="hero-pill__value">
+              {{ (job_board | default([], true)) | length }}
+            </span>
+          </div>
+          <div class="hero-pill">
+            <span class="hero-pill__label">Top matches</span>
+            <span class="hero-pill__value">
+              {{ (recommendations | default([], true)) | length }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero__right">
+        <div class="hero-panel">
+          <div class="hero-panel__row">
+            <span class="hero-panel__label">Match score focus</span>
+            <span class="hero-panel__value">70%+</span>
+          </div>
+          <div class="hero-panel__row">
+            <span class="hero-panel__label">Companies watched</span>
+            <span class="hero-panel__value">{{ companies|length if companies is defined else 10 }}</span>
+          </div>
+          <div class="hero-panel__row">
+            <span class="hero-panel__label">Locations tracked</span>
+            <span class="hero-panel__value">{{ locations|length if locations is defined else 8 }}</span>
+          </div>
+          <div class="hero-panel__hint">
+            Tweak your tiers in Preferences to reshape your deck in real time.
+          </div>
+        </div>
       </div>
     </header>
+
 
     <main class="content">
       {% block content %}{% endblock %}
     </main>
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
   </body>
 </html>
