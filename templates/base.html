@@ -7,6 +7,21 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
   </head>
   <body>
+    <!-- Navigation Toggle (CSS-only hamburger menu) -->
+    <input type="checkbox" id="nav-toggle" class="nav-toggle" />
+    <label for="nav-toggle" class="nav-hamburger">☰</label>
+    <label for="nav-toggle" class="nav-overlay"></label>
+
+    <!-- Sidebar Navigation -->
+    <aside class="nav-sidebar">
+      <label for="nav-toggle" class="nav-close">✕</label>
+      <nav class="nav-links">
+        <a href="{{ url_for('home') }}">Home</a>
+        <!-- TODO: Replace testuser with session user when auth is integrated -->
+        <a href="{{ url_for('preferences', user_id='testuser') }}">Preferences</a>
+      </nav>
+    </aside>
+
     <header class="hero">
       <div class="hero__content">
         <h1>TODO Website Name</h1>
@@ -22,4 +37,3 @@
     </main>
   </body>
 </html>
-
