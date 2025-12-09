@@ -14,6 +14,116 @@
   box-sizing: border-box;
 }
 
+/* ================================
+   Navigation Sidebar (CSS-only)
+   ================================ */
+
+.nav-toggle {
+  display: none;
+}
+
+.nav-hamburger {
+  position: fixed;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 1000;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.nav-hamburger:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--accent);
+}
+
+.nav-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 998;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.nav-sidebar {
+  position: fixed;
+  top: 0;
+  left: -280px;
+  width: 280px;
+  height: 100%;
+  background: var(--card);
+  z-index: 999;
+  padding: 1.5rem;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+  transition: left 0.3s ease;
+}
+
+.nav-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 0.25rem;
+  transition: background 0.15s ease;
+}
+
+.nav-close:hover {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.nav-links {
+  margin-top: 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.nav-links a {
+  display: block;
+  padding: 0.75rem 1rem;
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 500;
+  border-radius: 0.5rem;
+  transition: background 0.15s ease;
+}
+
+.nav-links a:hover {
+  background: var(--bg);
+}
+
+/* Show sidebar and overlay when toggle is checked */
+.nav-toggle:checked ~ .nav-overlay {
+  opacity: 1;
+  visibility: visible;
+}
+
+.nav-toggle:checked ~ .nav-sidebar {
+  left: 0;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
