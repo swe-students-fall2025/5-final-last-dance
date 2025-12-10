@@ -1,4 +1,4 @@
-[![Build and Deploy Flask App](https://github.com/swe-students-fall2025/5-final-last-dance/actions/workflows/flask-app.yml/badge.svg?branch=main)](https://github.com/swe-students-fall2025/5-final-last-dance/actions/workflows/flask-app.yml) [![Test Coverage](https://codecov.io/gh/swe-students-fall2025/5-final-last-dance/branch/main/graph/badge.svg?flag=codecov-umbrella)](https://codecov.io/gh/swe-students-fall2025/5-final-last-dance)
+[![Flask CI/CD pipeline](https://github.com/swe-students-fall2025/5-final-last-dance/actions/workflows/flask-app.yml/badge.svg?branch=main)](https://github.com/swe-students-fall2025/5-final-last-dance/actions/workflows/flask-app.yml)
 
 # PitchDeck
 
@@ -6,7 +6,7 @@ Pitchdeck scrapes top tech companies, ranks openings to your preferences, and ke
 
 ### Container Images
 
-[This](https://hub.docker.com/r/alfardil28/pitchdeck) container runs the entire application.
+[This](https://hub.docker.com/r/alfardil28/last-dance-job-board) container runs the entire application.
 
 - [Alif](https://github.com/Alif-4)
 - [Alfardil](https://github.com/alfardil)
