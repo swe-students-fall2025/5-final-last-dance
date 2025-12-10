@@ -11,9 +11,7 @@ ENV MONGO_DBNAME=$MONGO_DBNAME
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     FLASK_APP=app.py \
-    FLASK_ENV=production \
-    MONGO_URI=$MONGO_URI \
-    MONGO_DBNAME=$MONGO_DBNAME
+    FLASK_ENV=production
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
