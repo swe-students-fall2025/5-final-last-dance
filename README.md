@@ -78,11 +78,11 @@ Each scraper updates its CSV file in `scrapers/data/`.
 ## Docker
 
 ```bash
-docker pull alfardil28/pitchdeck
+docker pull alfardil28/last-dance-job-board
 docker run -p 5000:5000 \
   -e MONGO_URI="your_mongo_uri" \
   -e MONGO_DBNAME="mamg_tracker" \
-  alfardil28/pitchdeck
+  alfardil28/last-dance-job-board
 ```
 
 # TESTING
@@ -155,4 +155,4 @@ We use GitHub Actions for CI/CD:
 
 ## Docker Hub
 
-[alfardil28/pitchdeck](https://hub.docker.com/r/alfardil28/pitchdeck)
+[alfardil28/last-dance-job-board](https://hub.docker.com/r/alfardil28/last-dance-job-board)
