@@ -1,44 +1,8 @@
 {% extends 'base.html' %}
 
-{% block title %}Home - Last Dance{% endblock %}
+{% block title %}Home{% endblock %}
 
 {% block content %}
-<div class="board-toolbar">
-    <input
-      type="search"
-      id="job-search"
-      class="board-toolbar__search"
-      placeholder="Search by title, company, or location"
-      autocomplete="off"
-    />
-    <div class="board-toolbar__chips">
-      <button class="chip chip--active" data-filter="all">All</button>
-      <button class="chip" data-filter="top-matches">Top matches</button>
-      <button class="chip" data-filter="remote">Remote</button>
-      {% for jt in job_types %}
-      <button class="chip" data-filter-type="{{ jt }}">{{ jt }}</button>
-      {% endfor %}
-    </div>
-  </div>
-
-<section class="home-intro">
-  <div>
-    <h2>Good matches for you</h2>
-    <p class="home-intro__subtitle">
-      Based on your preferences across companies, roles, locations, and job types.
-    </p>
-  </div>
-  <div class="home-intro__stats">
-    <div class="stat">
-      <span class="stat__label">Top matches</span>
-      <span class="stat__value">{{ recommendations|length }}</span>
-    </div>
-    <div class="stat">
-      <span class="stat__label">Live listings</span>
-      <span class="stat__value">{{ job_board|length }}</span>
-    </div>
-  </div>
-</section>
 
 <section class="discover">
   <div class="section-heading section-heading--row">
@@ -46,7 +10,7 @@
       <h2>Recommended for you</h2>
       <p>Jobs that best fit your current preference profile.</p>
     </div>
-    <a class="section-heading__link" href="{{ url_for('preferences', user_id='testuser') }}">
+    <a class="section-heading__link" href="{{ url_for('preferences', user_id=user_id) }}">
       Adjust preferences →
     </a>
   </div>
@@ -59,7 +23,14 @@
       data-type="{{ job.type|default('') }}"
       data-tags="{{ job.tags|join(',') if job.tags else '' }}"
     >
+      <a
+        class="card__overlay-link"
+        href="{{ url_for('job_detail', company_slug=job.company_slug, identifier=job.identifier, user_id=user_id) }}"
+        aria-label="View details for {{ job.title }}"
+      ></a>
+
       <button class="card__favorite" type="button" aria-label="Favorite job">♡</button>
+
       <div class="card__meta">
         {% if job.match_score is defined %}
         <span class="tag">Match {{ job.match_score }}%</span>
@@ -111,6 +82,12 @@
       data-type="{{ job.type|default('') }}"
       data-tags="{{ job.tags|join(',') if job.tags else '' }}"
     >
+      <a
+        class="card__overlay-link"
+        href="{{ url_for('job_detail', company_slug=job.company_slug, identifier=job.identifier, user_id=user_id) }}"
+        aria-label="View details for {{ job.title }}"
+      ></a>
+
       <div class="card__meta">
         {% if job.company %}
         <span class="tag tag--secondary">{{ job.company }}</span>
@@ -119,6 +96,7 @@
         <span class="tag">{{ job.posted }}</span>
         {% endif %}
       </div>
+
       <h3>{{ job.title }}</h3>
       {% if job.location %}
       <p class="card__location">{{ job.location }}</p>
@@ -137,12 +115,18 @@
   <div class="section-heading section-heading--row">
     <div>
       <h2>Live job board</h2>
-      <p>Raw data from the scraper + transform pipeline.</p>
+      <p>Fresh roles streaming in from all scrapers.</p>
     </div>
+    <a
+      class="section-heading__link"
+      href="{{ url_for('jobs', user_id=user_id) }}"
+    >
+      View all {{ total_live_jobs }} jobs →
+    </a>
   </div>
 
   <div class="cards cards--board" id="job-board-cards">
-    {% for job in job_board %}
+  {% for job in job_board_preview %}
     <article
       class="card card--board"
       data-company="{{ job.company|default('') }}"
@@ -152,7 +136,14 @@
       data-match="{{ job.match_score|default(0) }}"
       data-remote="{{ 'true' if 'remote' in job.location|lower else 'false' }}"
     >
+      <a
+        class="card__overlay-link"
+        href="{{ url_for('job_detail', company_slug=job.company_slug, identifier=job.identifier, user_id=user_id) }}"
+        aria-label="View details for {{ job.title }}"
+      ></a>
+
       <button class="card__favorite" type="button" aria-label="Favorite job">♡</button>
+
       <header class="card__header">
         <div>
           <h3>{{ job.title }}</h3>
@@ -164,12 +155,15 @@
         <span class="tag tag--secondary">{{ job.posted }}</span>
         {% endif %}
       </header>
+
       <p class="card__summary">
         {{ job.summary or 'Full description available on the source site.' }}
       </p>
+
       {% if job.location %}
       <p class="card__location">{{ job.location }}</p>
       {% endif %}
+
       {% if job.tags %}
       <div class="tag-group">
         {% for tag in job.tags %}
@@ -177,6 +171,7 @@
         {% endfor %}
       </div>
       {% endif %}
+
       <div class="card__footer">
         {% if job.type %}
         <span class="tag tag--soft">{{ job.type }}</span>
@@ -189,4 +184,5 @@
     {% endfor %}
   </div>
 </section>
+
 {% endblock %}

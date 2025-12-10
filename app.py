@@ -1,15 +1,26 @@
 from __future__ import annotations
 
 import os
+import csv
 import datetime
 from datetime import timezone
 
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, abort
 import pymongo
 from bson.objectid import ObjectId
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CSV_DIR = os.path.join("scrapers", "data")
+
+CSV_SOURCES = [    
+    (os.path.join(CSV_DIR, "meta_internships.csv"), "Meta"),
+    (os.path.join(CSV_DIR, "microsoft_jobs.csv"), "Microsoft"),
+    # (os.path.join(CSV_DIR, "google_jobs.csv"), "Google"),
+    # (os.path.join(CSV_DIR, "amazon_jobs.csv"), "Amazon"),
+]
 
 COMPANIES = [
     "Google", "Microsoft", "Apple", "Amazon", "Meta",
@@ -47,6 +58,77 @@ TIERS = [
 
 DEFAULT_TIER = 3
 
+def load_jobs_from_csv(path: str, company_name: str):
+    """Load jobs from a CSV produced by a scraper and normalize fields."""
+    if not os.path.exists(path):
+        print(f"[CSV] File not found for {company_name}: {path}")
+        return []
+
+    jobs = []
+    print(f"[CSV] Loading jobs for {company_name} from {path}")
+
+    with open(path, newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            title = (row.get("title") or "").strip()
+            location = (row.get("location") or "").strip()
+            department = (row.get("department") or "").strip()
+            job_id = (row.get("job_id") or "").strip()
+            url = (row.get("url") or "").strip()
+            scraped_str = (row.get("scraped_at") or "").strip()
+
+            if not title or not url:
+                continue
+
+            scraped_dt = None
+            if scraped_str:
+                for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S"):
+                    try:
+                        scraped_dt = datetime.datetime.strptime(scraped_str, fmt).replace(
+                            tzinfo=timezone.utc
+                        )
+                        break
+                    except ValueError:
+                        continue
+
+            title_lower = title.lower()
+            dept_lower = department.lower()
+
+            if "intern" in title_lower or "intern" in dept_lower:
+                job_type = "Internship"
+            elif "contract" in title_lower or "contract" in dept_lower:
+                job_type = "Contract"
+            else:
+                job_type = "Full-time"
+
+            tags = []
+            if department:
+                for part in department.split("+"):
+                    tag = part.replace("more", "").strip()
+                    if tag:
+                        tags.append(tag)
+            if location:
+                primary_location = location.split("+")[0].strip()
+                if primary_location and primary_location not in tags:
+                    tags.append(primary_location)
+
+            job = {
+                "title": title,
+                "location": location,
+                "department": department,
+                "job_id": job_id,
+                "url": url,
+                "scraped_at": scraped_dt,
+                "posted_date": scraped_dt,
+                "company": company_name,
+                "type": job_type,
+                "tags": tags,
+            }
+            jobs.append(job)
+
+    print(f"[CSV] Loaded {len(jobs)} jobs for {company_name}")
+    return jobs
+
 def score_jobs_for_user(db, user_id: str, jobs):
     now = datetime.datetime.now(timezone.utc)
 
@@ -70,6 +152,12 @@ def score_jobs_for_user(db, user_id: str, jobs):
     for job in jobs:
         score = 0
 
+        # Identifier + slug for detail URLs
+        raw_company = job.get("company") or "Unknown"
+        identifier = job.get("job_id") or job.get("url") or str(job.get("_id", ""))
+        job["identifier"] = identifier
+        job["company_slug"] = raw_company.lower().replace(" ", "-")
+
         company = job.get("company")
         if company in company_prefs:
             rank = company_prefs[company]
@@ -81,18 +169,19 @@ def score_jobs_for_user(db, user_id: str, jobs):
             score += (5 - rank) * 18
 
         role = job.get("role") or job.get("title")
-        for canonical_role in ROLES:
-            if canonical_role.lower() in str(role).lower():
-                rank = role_prefs.get(canonical_role)
-                if rank:
-                    score += (5 - rank) * 20
-                break
+        if role:
+            for canonical_role in ROLES:
+                if canonical_role.lower() in str(role).lower():
+                    rank = role_prefs.get(canonical_role)
+                    if rank:
+                        score += (5 - rank) * 20
+                    break
 
         jtype = job.get("type")
         if jtype in job_type_prefs:
             score += 15
 
-        posted_dt = job.get("posted_date")
+        posted_dt = job.get("posted_date") or job.get("scraped_at")
         if isinstance(posted_dt, datetime.datetime):
             days_old = max(0, (now - posted_dt).days)
             recency_boost = max(0, 25 - days_old)
@@ -101,12 +190,39 @@ def score_jobs_for_user(db, user_id: str, jobs):
         score = max(0, min(100, score))
         job["match_score"] = int(score)
 
-        if "posted" not in job and isinstance(job.get("posted_date"), datetime.datetime):
-            job["posted"] = job["posted_date"].strftime("%b %-d")
+        if "posted" not in job and isinstance(posted_dt, datetime.datetime):
+            job["posted"] = posted_dt.strftime("%b %d")
 
         scored_jobs.append(job)
 
     return scored_jobs
+
+def load_and_score_jobs(db, user_id: str):
+    """Load all jobs (Mongo + CSV) and score them for this user."""
+    # 1) Jobs that might already be in Mongo
+    mongo_jobs = list(db.jobs.find({}))
+
+    # 2) Jobs from all CSV-based scrapers
+    csv_jobs = []
+    for path, company_name in CSV_SOURCES:
+        csv_jobs.extend(load_jobs_from_csv(path, company_name))
+
+    # 3) Combine & dedupe by (company, job_id) or URL
+    combined = mongo_jobs + csv_jobs
+    unique_jobs = {}
+    for job in combined:
+        company = job.get("company") or "Unknown"
+        key = (
+            company,
+            job.get("job_id")
+            or job.get("url")
+            or str(job.get("_id", "")),
+        )
+        if key not in unique_jobs:
+            unique_jobs[key] = job
+
+    jobs = list(unique_jobs.values())
+    return score_jobs_for_user(db, user_id, jobs)
 
 def create_app():
     """Create and configure the Flask application."""
@@ -125,12 +241,11 @@ def create_app():
     def home():
         user_id = request.args.get("user_id", "testuser")
 
-        jobs_cursor = db.jobs.find({}).sort("posted_date", -1)
-        jobs = list(jobs_cursor)
+        jobs = load_and_score_jobs(db, user_id)
 
-        jobs = score_jobs_for_user(db, user_id, jobs)
-
-        recommended_jobs = sorted(jobs, key=lambda j: j.get("match_score", 0), reverse=True)[:8]
+        recommended_jobs = sorted(
+            jobs, key=lambda j: j.get("match_score", 0), reverse=True
+        )[:8]
 
         trending_jobs = sorted(
             jobs,
@@ -142,13 +257,77 @@ def create_app():
             reverse=True,
         )[:10]
 
+        # PREVIEW: only show a slice of the live board on the homepage
+        live_preview = sorted(
+            jobs,
+            key=lambda j: (
+                j.get("scraped_at")
+                or j.get("posted_date")
+                or datetime.datetime(1970, 1, 1, tzinfo=timezone.utc)
+            ),
+            reverse=True,
+        )[:16] 
+
         return render_template(
             "index.html",
             user_id=user_id,
-            job_board=jobs,
             recommendations=recommended_jobs,
             trending_jobs=trending_jobs,
+            job_board_preview=live_preview,
+            total_live_jobs=len(jobs),
             job_types=JOB_TYPES,
+        )
+    
+    @app.route("/jobs", endpoint="jobs")
+    def job_board():
+        """Full live job board with client-side filtering."""
+        user_id = request.args.get("user_id", "testuser")
+
+        jobs = load_and_score_jobs(db, user_id)
+
+        jobs_sorted = sorted(
+            jobs,
+            key=lambda j: (
+                j.get("match_score", 0),
+                j.get("scraped_at")
+                or j.get("posted_date")
+                or datetime.datetime(1970, 1, 1, tzinfo=timezone.utc)
+            ),
+            reverse=True,
+        )
+
+        return render_template(
+            "jobs.html",
+            user_id=user_id,
+            job_board=jobs_sorted,
+            job_types=JOB_TYPES,
+            total_live_jobs=len(jobs),
+        )
+    
+    @app.route("/jobs/<company_slug>/<identifier>")
+    def job_detail(company_slug, identifier):
+        """Detail page for a single job."""
+        user_id = request.args.get("user_id", "testuser")
+
+        jobs = load_and_score_jobs(db, user_id)
+
+        job = next(
+            (
+                j
+                for j in jobs
+                if j.get("identifier") == identifier
+                and j.get("company_slug") == company_slug
+            ),
+            None,
+        )
+
+        if not job:
+            abort(404)
+
+        return render_template(
+            "job_detail.html",
+            user_id=user_id,
+            job=job,
         )
 
     @app.route("/preferences/<user_id>")
