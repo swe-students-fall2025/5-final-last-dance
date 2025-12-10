@@ -81,7 +81,8 @@ document.addEventListener("DOMContentLoaded", function () {
       var wasActive = button.classList.contains("card__favorite--active") || 
                       button.classList.contains("job-detail__favorite--active");
       
-      fetch("/favorite/" + companySlug + "/" + encodeURIComponent(identifier), {
+      // Identifier is already URL-encoded from the template, use it directly
+      fetch("/favorite/" + companySlug + "/" + identifier, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
