@@ -1,0 +1,95 @@
+{% extends 'base.html' %} {% block title %}Profile - {{ user.username }}{%
+endblock %} {% block content %}
+
+<section class="profile-section">
+  <div class="profile-header">
+    <h1>My Profile</h1>
+    <p class="profile-meta">Welcome back, {{ user.username }}!</p>
+  </div>
+
+  <div class="profile-stats">
+    <div class="stat-card">
+      <span class="stat-value">{{ total_favorites }}</span>
+      <span class="stat-label">Favorited Jobs</span>
+    </div>
+  </div>
+
+  <section class="favorites-section">
+    <div class="section-heading">
+      <h2>My Favorites</h2>
+      <p>Jobs you've saved for later</p>
+    </div>
+
+    {% if favorited_jobs %}
+    <div class="cards cards--board">
+      {% for job in favorited_jobs %}
+      <article
+        class="card card--board"
+        data-company="{{ job.company|default('') }}"
+        data-location="{{ job.location|default('') }}"
+        data-type="{{ job.type|default('') }}"
+        data-tags="{{ job.tags|join(',') if job.tags else '' }}"
+        data-match="{{ job.match_score|default(0) }}"
+      >
+        <a
+          class="card__overlay-link"
+          href="{{ url_for('job_detail', company_slug=job.company_slug, identifier=job.identifier) }}"
+          aria-label="View details for {{ job.title }}"
+        ></a>
+
+        <button
+          class="card__favorite card__favorite--active"
+          type="button"
+          aria-label="Unfavorite job"
+          data-company-slug="{{ job.company_slug }}"
+          data-identifier="{{ job.identifier }}"
+        >
+          ♥
+        </button>
+
+        <header class="card__header">
+          <div>
+            <h3>{{ job.title }}</h3>
+            {% if job.company %}
+            <p class="card__company">{{ job.company }}</p>
+            {% endif %}
+          </div>
+          {% if job.posted %}
+          <span class="tag tag--secondary">{{ job.posted }}</span>
+          {% endif %}
+        </header>
+
+        <p class="card__summary">
+          {{ job.summary or 'Full description available on the source site.' }}
+        </p>
+
+        {% if job.location %}
+        <p class="card__location">{{ job.location }}</p>
+        {% endif %} {% if job.tags %}
+        <div class="tag-group">
+          {% for tag in job.tags %}
+          <span class="tag tag--pill">{{ tag }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="card__footer">
+          {% if job.type %}
+          <span class="tag tag--soft">{{ job.type }}</span>
+          {% endif %} {% if job.match_score is defined %}
+          <span class="card__posted">Match {{ job.match_score }}%</span>
+          {% endif %}
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <p>You haven't favorited any jobs yet.</p>
+      <a href="{{ url_for('jobs') }}" class="btn-primary">Browse Jobs</a>
+    </div>
+    {% endif %}
+  </section>
+</section>
+
+{% endblock %}

@@ -11,19 +11,19 @@
 
     <!-- Tab Navigation -->
     <nav class="tabs">
-      <a href="{{ url_for('preferences', user_id=user_id, tab='companies') }}" 
+      <a href="{{ url_for('preferences', tab='companies') }}" 
          class="tab {% if active_tab == 'companies' %}tab--active{% endif %}">Companies</a>
-      <a href="{{ url_for('preferences', user_id=user_id, tab='roles') }}" 
+      <a href="{{ url_for('preferences', tab='roles') }}" 
          class="tab {% if active_tab == 'roles' %}tab--active{% endif %}">Roles</a>
-      <a href="{{ url_for('preferences', user_id=user_id, tab='locations') }}" 
+      <a href="{{ url_for('preferences', tab='locations') }}" 
          class="tab {% if active_tab == 'locations' %}tab--active{% endif %}">Locations</a>
-      <a href="{{ url_for('preferences', user_id=user_id, tab='job_types') }}" 
+      <a href="{{ url_for('preferences', tab='job_types') }}" 
          class="tab {% if active_tab == 'job_types' %}tab--active{% endif %}">Job Types</a>
     </nav>
 
     <!-- Companies Tab -->
     {% if active_tab == 'companies' %}
-    <form method="POST" action="{{ url_for('save_company_preferences', user_id=user_id) }}">
+    <form method="POST" action="{{ url_for('save_company_preferences') }}">
       <div class="pref-section">
         <h3>Companies</h3>
         <p class="pref-hint">Select your preference tier for each company.</p>
@@ -49,7 +49,7 @@
 
     <!-- Roles Tab -->
     {% if active_tab == 'roles' %}
-    <form method="POST" action="{{ url_for('save_role_preferences', user_id=user_id) }}">
+    <form method="POST" action="{{ url_for('save_role_preferences') }}">
       <div class="pref-section">
         <h3>Roles</h3>
         <p class="pref-hint">Select your preference tier for each role.</p>
@@ -75,7 +75,7 @@
 
     <!-- Locations Tab -->
     {% if active_tab == 'locations' %}
-    <form method="POST" action="{{ url_for('save_location_preferences', user_id=user_id) }}">
+    <form method="POST" action="{{ url_for('save_location_preferences') }}">
       <div class="pref-section">
         <h3>Locations</h3>
         <p class="pref-hint">Select your preference tier for each location.</p>
@@ -101,7 +101,7 @@
 
     <!-- Job Types Tab -->
     {% if active_tab == 'job_types' %}
-    <form method="POST" action="{{ url_for('save_job_type_preferences', user_id=user_id) }}">
+    <form method="POST" action="{{ url_for('save_job_type_preferences') }}">
       <div class="pref-section">
         <h3>Job Types</h3>
         <p class="pref-hint">Select all that interest you.</p>

@@ -243,6 +243,25 @@ main {
   border-radius: 50%;
   font-size: 1.1rem;
   cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card__favorite:hover {
+  background: rgba(125, 95, 255, 0.2);
+}
+
+.card__favorite--active,
+.job-detail__favorite--active {
+  background: rgba(255, 59, 92, 0.15);
+  color: #ff3b5c;
+}
+
+.card__favorite--active:hover,
+.job-detail__favorite--active:hover {
+  background: rgba(255, 59, 92, 0.25);
 }
 
 .tag {
@@ -1000,4 +1019,218 @@ main {
     margin-top: 1.2rem;
     justify-content: flex-start;
   }
+}
+
+/* ================================
+   Auth Forms
+   ================================ */
+
+.auth-section {
+  max-width: 500px;
+  margin: 3rem auto;
+  padding: 0 1.5rem;
+}
+
+.auth-container {
+  background: var(--card);
+  border-radius: 1rem;
+  padding: 2.5rem;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.auth-container h1 {
+  margin: 0 0 0.5rem 0;
+  font-size: 2rem;
+}
+
+.auth-container > p {
+  color: var(--muted);
+  margin-bottom: 2rem;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.form-group input {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  background: var(--bg);
+  transition: border-color 0.2s ease;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.auth-link {
+  margin-top: 1.5rem;
+  text-align: center;
+  color: var(--muted);
+}
+
+.auth-link a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.auth-link a:hover {
+  text-decoration: underline;
+}
+
+.flash-messages {
+  margin-bottom: 1.5rem;
+}
+
+.flash {
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.flash--success {
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.flash--error {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.flash--info {
+  background: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+/* ================================
+   Profile Page
+   ================================ */
+
+.profile-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.profile-header {
+  margin-bottom: 2rem;
+}
+
+.profile-header h1 {
+  margin: 0 0 0.5rem 0;
+  font-size: 2.5rem;
+}
+
+.profile-meta {
+  color: var(--muted);
+  font-size: 1.1rem;
+}
+
+.profile-stats {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: 1.5rem 2rem;
+  text-align: center;
+  min-width: 150px;
+}
+
+.stat-value {
+  display: block;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin-top: 0.5rem;
+}
+
+.favorites-section {
+  margin-top: 3rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+}
+
+.empty-state p {
+  color: var(--muted);
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* ================================
+   Job Detail Favorite Button
+   ================================ */
+
+.job-detail__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.job-detail__favorite {
+  border: none;
+  background: rgba(125, 95, 255, 0.12);
+  color: #7d5fff;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 1.3rem;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.job-detail__favorite:hover {
+  background: rgba(125, 95, 255, 0.2);
+}
+
+.job-detail__favorite--active {
+  background: rgba(255, 59, 92, 0.15);
+  color: #ff3b5c;
+}
+
+.job-detail__favorite--active:hover {
+  background: rgba(255, 59, 92, 0.25);
 }

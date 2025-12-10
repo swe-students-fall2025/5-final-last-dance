@@ -82,11 +82,9 @@ def scrape_page_jobs(driver, wait, page_num):
 def click_next_button(driver, wait):
     """Click the next page button and return True if successful"""
     try:
-        # Scroll to bottom to ensure pagination is visible
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         time.sleep(1)
         
-        # Store current page number and URL to verify page change
         current_url = driver.current_url
         current_page = None
         try:
@@ -96,7 +94,6 @@ def click_next_button(driver, wait):
         except:
             pass
         
-        # Try multiple selectors for the next button
         next_button_selectors = [
             "button.btn.circle.right[data-label='right']",
             "button[aria-label='Next page']",
@@ -117,7 +114,6 @@ def click_next_button(driver, wait):
                         data_label = btn.get_attribute('data-label') or ''
                         enabled = btn.is_enabled()
                         
-                        # Check if this button is usable - Skip displayed check since Amazon hides these in headless
                         is_disabled = 'disabled' in class_name.split() or aria_disabled == 'true'
                         
                         if enabled and not is_disabled and (data_label == 'right' or 'right' in class_name):
@@ -135,18 +131,14 @@ def click_next_button(driver, wait):
             print("\nNo next button found - reached end")
             return False
         
-        # Scroll button into view and click
         driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", next_button)
         time.sleep(0.5)
         
-        # Click using JavaScript for reliability
         driver.execute_script("arguments[0].click();", next_button)
         print("Clicked next button, loading next page...")
         
-        # Wait for page to load
         time.sleep(3)
         
-        # Verify page changed
         new_url = driver.current_url
         if new_url != current_url:
             if current_page:
@@ -158,7 +150,6 @@ def click_next_button(driver, wait):
                     pass
             return True
         
-        # Try waiting for staleness as fallback
         try:
             wait.until(EC.staleness_of(next_button))
             return True

@@ -53,21 +53,18 @@ def scrape_page_jobs(driver, wait, page_num):
                 'scraped_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             }
             
-            # Extract job title
             try:
                 title_elem = job_elem.find_element(By.CSS_SELECTOR, "h3.QJPWVe")
                 job_data['title'] = title_elem.text.strip()
             except:
                 pass
             
-            # Extract location
             try:
                 location_elem = job_elem.find_element(By.CSS_SELECTOR, "span.r0wTof")
                 job_data['location'] = location_elem.text.strip()
             except:
                 pass
             
-            # Extract job URL and ID
             try:
                 link_elem = job_elem.find_element(By.CSS_SELECTOR, "a.WpHeLc")
                 job_url = link_elem.get_attribute('href')
@@ -76,14 +73,12 @@ def scrape_page_jobs(driver, wait, page_num):
                         job_url = 'https://www.google.com/about/careers/applications/' + job_url
                     job_data['url'] = job_url
                     
-                    # Extract job ID from URL
                     if '/results/' in job_url:
                         job_id = job_url.split('/results/')[1].split('-')[0]
                         job_data['job_id'] = job_id
             except:
                 pass
             
-            # Extract company (always Google)
             job_data['department'] = 'Google'
             
             if job_data['title'] and job_data['url']:
@@ -99,15 +94,12 @@ def scrape_page_jobs(driver, wait, page_num):
 def click_next_button(driver, wait):
     """Click the next page button and return True if successful"""
     try:
-        # Scroll to bottom
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         time.sleep(1)
         
-        # Store current URL
         current_url = driver.current_url
         print(f"Current URL: {current_url}")
         
-        # Try to find the next page button/link
         next_button_selectors = [
             "a.WpHeLc[aria-label='Go to next page']",
             "div[jsname='ViaHrd'] a.WpHeLc",
@@ -123,7 +115,6 @@ def click_next_button(driver, wait):
                     try:
                         href = btn.get_attribute('href')
                         
-                        # Check if this is a valid next page link
                         if href and 'page=' in href:
                             next_button = btn
                             print(f"Found next button with href: {href}")
@@ -140,21 +131,16 @@ def click_next_button(driver, wait):
             print("\nNo next button found - reached end")
             return False
         
-        # Get the next page URL
         next_url = next_button.get_attribute('href')
         
-        # Scroll button into view and click
         driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", next_button)
         time.sleep(0.5)
         
-        # Navigate to next page using the href URL
         print("Navigating to next page...")
         driver.get(next_url)
         
-        # Wait for page to load
         time.sleep(2)
         
-        # Verify URL changed
         new_url = driver.current_url
         if new_url != current_url:
             print(f"Successfully navigated to new page")

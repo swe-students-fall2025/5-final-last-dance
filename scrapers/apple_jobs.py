@@ -53,12 +53,10 @@ def scrape_page_jobs(driver, wait, page_num):
                 'scraped_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             }
             
-            # Extract job title
             try:
                 title_elem = job_elem.find_element(By.CSS_SELECTOR, "h3 a.link-inline")
                 job_data['title'] = title_elem.text.strip()
                 
-                # Extract job URL
                 job_url = title_elem.get_attribute('href')
                 if job_url:
                     if not job_url.startswith('http'):
@@ -67,31 +65,26 @@ def scrape_page_jobs(driver, wait, page_num):
             except:
                 pass
             
-            # Extract location
             try:
                 location_elem = job_elem.find_element(By.CSS_SELECTOR, "span[id*='search-store-name-container']")
                 job_data['location'] = location_elem.text.strip()
             except:
                 pass
             
-            # Extract department/team name
             try:
                 dept_elem = job_elem.find_element(By.CSS_SELECTOR, "span.team-name")
                 job_data['department'] = dept_elem.text.strip()
             except:
                 pass
             
-            # Extract job ID (role number)
             try:
                 role_num_elem = job_elem.find_element(By.CSS_SELECTOR, "span[id*='search-role-number']")
                 job_data['job_id'] = role_num_elem.text.strip()
             except:
-                # Try to extract from href or aria-label
                 try:
                     title_elem = job_elem.find_element(By.CSS_SELECTOR, "h3 a.link-inline")
                     aria_label = title_elem.get_attribute('aria-label')
                     if aria_label:
-                        # Extract job ID from aria-label like "Role Name 200635900"
                         parts = aria_label.split()
                         for part in parts:
                             if part.isdigit() and len(part) >= 8:
@@ -113,11 +106,9 @@ def scrape_page_jobs(driver, wait, page_num):
 def click_next_button(driver, wait):
     """Click the next page button and return True if successful"""
     try:
-        # Scroll to pagination area
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         time.sleep(1)
         
-        # Get current page number
         current_page = None
         try:
             page_input = driver.find_element(By.CSS_SELECTOR, "input#pagination-search-page-number")
@@ -126,7 +117,6 @@ def click_next_button(driver, wait):
         except:
             pass
         
-        # Get total pages
         try:
             total_pages_elem = driver.find_element(By.CSS_SELECTOR, "span.rc-pagination-total-pages")
             total_pages = total_pages_elem.text.strip()
@@ -138,7 +128,6 @@ def click_next_button(driver, wait):
         except:
             pass
         
-        # Find next button
         next_button_selectors = [
             "button.icon-chevronend[aria-label='Next Page']",
             "button[aria-label='Next Page']",
@@ -152,7 +141,6 @@ def click_next_button(driver, wait):
                 
                 for btn in buttons:
                     try:
-                        # Check if button is enabled
                         is_disabled = btn.get_attribute('disabled')
                         aria_disabled = btn.get_attribute('aria-disabled')
                         
@@ -171,18 +159,14 @@ def click_next_button(driver, wait):
             print("\nNo enabled next button found - reached end")
             return False
         
-        # Scroll button into view
         driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", next_button)
         time.sleep(0.5)
         
-        # Click next button
         driver.execute_script("arguments[0].click();", next_button)
         print("Clicked next button, loading next page...")
         
-        # Wait for page to load
         time.sleep(3)
         
-        # Verify page changed
         if current_page:
             try:
                 page_input = driver.find_element(By.CSS_SELECTOR, "input#pagination-search-page-number")
@@ -197,7 +181,6 @@ def click_next_button(driver, wait):
             except:
                 pass
         
-        # Wait for new content to load
         try:
             wait.until(EC.staleness_of(next_button))
             return True
