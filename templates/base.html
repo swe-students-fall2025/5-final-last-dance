@@ -9,12 +9,10 @@
     {% block extra_css %}{% endblock %}
   </head>
   <body>
-    <!-- Navigation Toggle -->
     <input type="checkbox" id="nav-toggle" class="nav-toggle" />
     <label for="nav-toggle" class="nav-hamburger">☰</label>
     <label for="nav-toggle" class="nav-overlay"></label>
 
-    <!-- Sidebar Navigation -->
     <aside class="nav-sidebar">
       <label for="nav-toggle" class="nav-close">✕</label>
       <nav class="nav-links">
@@ -25,6 +23,7 @@
       </nav>
     </aside>
 
+    {% if request.path != '/login' and request.path != '/register' %}
     <header class="hero hero--pitchdeck">
       <div class="hero__left">
         <a
@@ -36,8 +35,9 @@
         </a>
         <h1 class="hero__title">Your curated deck of high-signal roles.</h1>
         <p class="hero__subtitle">
-          Pitchdeck scrapes top tech companies, ranks openings to your preferences,
-          and keeps a live shortlist so you can spend time on the right applications.
+          Pitchdeck scrapes top tech companies, ranks openings to your
+          preferences, and keeps a live shortlist so you can spend time on the
+          right applications.
         </p>
 
         <div class="hero__actions">
@@ -45,6 +45,11 @@
           <a href="{{ url_for('preferences', user_id='testuser') }}" class="btn-secondary">
             Edit preferences
           </a>
+          {% else %}
+          <a href="{{ url_for('register') }}" class="btn-secondary">
+            Get started
+          </a>
+          {% endif %}
         </div>
 
         <div class="hero__meta">
@@ -83,6 +88,7 @@
         </div>
       </div>
     </header>
+    {% endif %}
 
     <main class="content">
       {% block content %}{% endblock %}

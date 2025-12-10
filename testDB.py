@@ -1,8 +1,4 @@
 #!/usr/bin/env python3
-"""
-Test script to verify MongoDB connection.
-Run with: pipenv run python test_db.py
-"""
 
 import os
 import datetime
@@ -21,7 +17,6 @@ def test_connection():
         cxn = pymongo.MongoClient(os.getenv("MONGO_URI"))
         db = cxn[os.getenv("MONGO_DBNAME")]
         
-        # Ping to verify connection
         cxn.admin.command("ping")
         print("✓ Connected!")
         
@@ -29,7 +24,6 @@ def test_connection():
         print(f"✗ Connection failed: {e}")
         return False
     
-    # Insert test document
     print("Inserting test document...")
     doc = {
         "name": "Test User",
@@ -39,12 +33,10 @@ def test_connection():
     result = db.test.insert_one(doc)
     print(f"✓ Inserted with ID: {result.inserted_id}")
     
-    # Read it back
     print("Reading back...")
     found = db.test.find_one({"_id": result.inserted_id})
     print(f"✓ Found: {found}")
     
-    # Cleanup
     print("Cleaning up...")
     db.test.delete_one({"_id": result.inserted_id})
     print("✓ Deleted test document")

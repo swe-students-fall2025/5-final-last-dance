@@ -28,13 +28,13 @@ def scrape_page_jobs(driver, wait, page_num):
     page_jobs = []
     
     try:
-        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "a[href*='/profile/job_details/'], a[href*='/jobs/']")))
-        time.sleep(1) 
+        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "li.rc-accordion-item")))
+        time.sleep(1)
     except TimeoutException:
         print(f"Timeout waiting for job listings to load on page {page_num}")
         return page_jobs
     
-    job_elements = driver.find_elements(By.CSS_SELECTOR, "a[href*='/profile/job_details/']")
+    job_elements = driver.find_elements(By.CSS_SELECTOR, "li.rc-accordion-item")
     
     if not job_elements:
         print("No job elements found")
@@ -53,18 +53,45 @@ def scrape_page_jobs(driver, wait, page_num):
                 'scraped_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             }
             
-            job_url = job_elem.get_attribute('href')
-            if job_url and '/profile/job_details/' in job_url:
-                job_data['url'] = job_url
-                job_data['job_id'] = job_url.split('/profile/job_details/')[-1].split('/')[0].split('?')[0]
+            try:
+                title_elem = job_elem.find_element(By.CSS_SELECTOR, "h3 a.link-inline")
+                job_data['title'] = title_elem.text.strip()
+                
+                job_url = title_elem.get_attribute('href')
+                if job_url:
+                    if not job_url.startswith('http'):
+                        job_url = 'https://jobs.apple.com' + job_url
+                    job_data['url'] = job_url
+            except:
+                pass
             
-            title_elem = job_elem.find_element(By.CSS_SELECTOR, "h3")
-            job_data['title'] = title_elem.text.strip()
+            try:
+                location_elem = job_elem.find_element(By.CSS_SELECTOR, "span[id*='search-store-name-container']")
+                job_data['location'] = location_elem.text.strip()
+            except:
+                pass
             
-            spans = job_elem.find_elements(By.CSS_SELECTOR, "span.xbks1sj")
-            if len(spans) >= 2:
-                job_data['location'] = spans[0].text.strip()
-                job_data['department'] = spans[2].text.strip() if len(spans) >= 3 else spans[1].text.strip()
+            try:
+                dept_elem = job_elem.find_element(By.CSS_SELECTOR, "span.team-name")
+                job_data['department'] = dept_elem.text.strip()
+            except:
+                pass
+            
+            try:
+                role_num_elem = job_elem.find_element(By.CSS_SELECTOR, "span[id*='search-role-number']")
+                job_data['job_id'] = role_num_elem.text.strip()
+            except:
+                try:
+                    title_elem = job_elem.find_element(By.CSS_SELECTOR, "h3 a.link-inline")
+                    aria_label = title_elem.get_attribute('aria-label')
+                    if aria_label:
+                        parts = aria_label.split()
+                        for part in parts:
+                            if part.isdigit() and len(part) >= 8:
+                                job_data['job_id'] = part
+                                break
+                except:
+                    pass
             
             if job_data['title'] and job_data['url']:
                 page_jobs.append(job_data)
@@ -80,65 +107,92 @@ def click_next_button(driver, wait):
     """Click the next page button and return True if successful"""
     try:
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(0.5)
+        time.sleep(1)
         
-        current_url = driver.current_url
+        current_page = None
+        try:
+            page_input = driver.find_element(By.CSS_SELECTOR, "input#pagination-search-page-number")
+            current_page = page_input.get_attribute('value')
+            print(f"Current page: {current_page}")
+        except:
+            pass
+        
+        try:
+            total_pages_elem = driver.find_element(By.CSS_SELECTOR, "span.rc-pagination-total-pages")
+            total_pages = total_pages_elem.text.strip()
+            print(f"Total pages: {total_pages}")
+            
+            if current_page and int(current_page) >= int(total_pages):
+                print("\nAlready on last page")
+                return False
+        except:
+            pass
         
         next_button_selectors = [
-            "div[aria-label='Button to select next week']",
-            "div[aria-label*='next'][role='button']",
-            "button[aria-label*='next']"
+            "button.icon-chevronend[aria-label='Next Page']",
+            "button[aria-label='Next Page']",
+            "div.rc-pagination-arrow button.icon-chevronend"
         ]
         
         next_button = None
         for selector in next_button_selectors:
             try:
                 buttons = driver.find_elements(By.CSS_SELECTOR, selector)
-                for button in buttons:
-                    if button.is_displayed() and button.is_enabled():
-                        aria_disabled = button.get_attribute('aria-disabled')
-                        class_name = button.get_attribute('class') or ''
+                
+                for btn in buttons:
+                    try:
+                        is_disabled = btn.get_attribute('disabled')
+                        aria_disabled = btn.get_attribute('aria-disabled')
                         
-                        if aria_disabled == 'true' or 'disabled' in class_name.lower():
-                            print("\nNext button is disabled - reached end of results")
-                            return False
-                        
-                        opacity = driver.execute_script("return window.getComputedStyle(arguments[0]).opacity;", button)
-                        if opacity and float(opacity) < 0.5:
-                            print("\nNext button appears disabled (low opacity) - reached end")
-                            return False
-                        
-                        next_button = button
-                        break
+                        if is_disabled is None and aria_disabled != 'true':
+                            next_button = btn
+                            break
+                    except:
+                        continue
+                
                 if next_button:
                     break
             except:
                 continue
         
         if not next_button:
-            print("\nNo next button found - reached end of results")
+            print("\nNo enabled next button found - reached end")
             return False
         
-        driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", next_button)
-        time.sleep(0.3)
+        driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", next_button)
+        time.sleep(0.5)
         
         driver.execute_script("arguments[0].click();", next_button)
-        print("\nClicked next button, loading next page...")
-        time.sleep(2)
+        print("Clicked next button, loading next page...")
+        
+        time.sleep(3)
+        
+        if current_page:
+            try:
+                page_input = driver.find_element(By.CSS_SELECTOR, "input#pagination-search-page-number")
+                new_page = page_input.get_attribute('value')
+                
+                if new_page != current_page:
+                    print(f"Successfully moved to page {new_page}")
+                    return True
+                else:
+                    print(f"Warning: Still on page {current_page}")
+                    return False
+            except:
+                pass
         
         try:
             wait.until(EC.staleness_of(next_button))
-            time.sleep(1)
             return True
         except:
-            return driver.current_url != current_url
+            return True
         
     except Exception as e:
-        print(f"\nError clicking next button: {e}")
+        print(f"\nError during pagination: {e}")
         return False
 
 
-def scrape_meta_jobs(url):
+def scrape_apple_jobs(url):
     """Scrape jobs"""
     driver = setup_driver()
     jobs_data = []
@@ -168,7 +222,7 @@ def scrape_meta_jobs(url):
             print(f"Total unique jobs so far: {len(jobs_data)}")
             
             if not click_next_button(driver, wait):
-                print("\nReached last page or no next button found.")
+                print("\nReached last page.")
                 break
             
             page_num += 1
@@ -184,7 +238,7 @@ def scrape_meta_jobs(url):
     return jobs_data
 
 
-def save_to_csv(jobs_data, filename='data/meta_jobs.csv'):
+def save_to_csv(jobs_data, filename='data/apple_jobs.csv'):
     """Save job data to CSV file, appending new jobs only"""
     if not jobs_data:
         print("No data to save")
@@ -230,10 +284,10 @@ def save_to_csv(jobs_data, filename='data/meta_jobs.csv'):
 
 def main():
     """Main execution function"""
-    url = "https://www.metacareers.com/jobsearch?sort_by_new=true&offices[0]=New%20York%2C%20NY&teams[0]=Technical%20Program%20Management&teams[1]=Software%20Engineering&teams[2]=Research&teams[3]=Data%20%26%20Analytics&teams[4]=Artificial%20Intelligence&teams[5]=Advertising%20Technology&teams[6]=AR%2FVR"
+    url = "https://jobs.apple.com/en-us/search?location=new-york-state985&team=machine-learning-infrastructure-MLAI-MLI+deep-learning-and-reinforcement-learning-MLAI-DLRL+natural-language-processing-and-speech-technologies-MLAI-NLP+computer-vision-MLAI-CV+applied-research-MLAI-AR+acoustic-technologies-HRDWR-ACT+analog-and-digital-design-HRDWR-ADD+architecture-HRDWR-ARCH+battery-engineering-HRDWR-BE+camera-technologies-HRDWR-CAM+display-technologies-HRDWR-DISP+engineering-project-management-HRDWR-EPM+environmental-technologies-HRDWR-ENVT+health-technology-HRDWR-HT+machine-learning-and-ai-HRDWR-MCHLN+mechanical-engineering-HRDWR-ME+process-engineering-HRDWR-PE+reliability-engineering-HRDWR-REL+sensor-technologies-HRDWR-SENT+silicon-technologies-HRDWR-SILT+system-design-and-test-engineering-HRDWR-SDE+wireless-hardware-HRDWR-WT+apps-and-frameworks-SFTWR-AF+cloud-and-infrastructure-SFTWR-CLD+core-operating-systems-SFTWR-COS+devops-and-site-reliability-SFTWR-DSR+engineering-project-management-SFTWR-EPM+information-systems-and-technology-SFTWR-ISTECH+machine-learning-and-ai-SFTWR-MCHLN+security-and-privacy-SFTWR-SEC+software-quality-automation-and-tools-SFTWR-SQAT+wireless-software-SFTWR-WSFT+internships-STDNT-INTRN"
     
-    print("Starting Meta Jobs Scraper...")
-    jobs = scrape_meta_jobs(url)
+    print("Starting Apple Jobs Scraper...")
+    jobs = scrape_apple_jobs(url)
     
     if jobs:
         save_to_csv(jobs)
@@ -244,4 +298,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

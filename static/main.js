@@ -62,4 +62,56 @@ document.addEventListener("DOMContentLoaded", function () {
       applyFilters();
     });
   });
+
+  // Favorite button functionality
+  var favoriteButtons = document.querySelectorAll(".card__favorite, .job-detail__favorite");
+  favoriteButtons.forEach(function (button) {
+    button.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      var companySlug = button.dataset.companySlug;
+      var identifier = button.dataset.identifier;
+
+      if (!companySlug || !identifier) {
+        return;
+      }
+
+      // Toggle visual state immediately for better UX
+      var wasActive = button.classList.contains("card__favorite--active") || 
+                      button.classList.contains("job-detail__favorite--active");
+      
+      fetch("/favorite/" + companySlug + "/" + encodeURIComponent(identifier), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then(function (response) {
+          return response.json();
+        })
+        .then(function (data) {
+          if (data.favorited) {
+            button.classList.add("card__favorite--active", "job-detail__favorite--active");
+            button.textContent = "♥";
+            button.setAttribute("aria-label", "Unfavorite job");
+          } else {
+            button.classList.remove("card__favorite--active", "job-detail__favorite--active");
+            button.textContent = "♡";
+            button.setAttribute("aria-label", "Favorite job");
+          }
+        })
+        .catch(function (error) {
+          console.error("Error toggling favorite:", error);
+          // Revert visual state on error
+          if (wasActive) {
+            button.classList.add("card__favorite--active", "job-detail__favorite--active");
+            button.textContent = "♥";
+          } else {
+            button.classList.remove("card__favorite--active", "job-detail__favorite--active");
+            button.textContent = "♡";
+          }
+        });
+    });
+  });
 });

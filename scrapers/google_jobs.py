@@ -28,13 +28,13 @@ def scrape_page_jobs(driver, wait, page_num):
     page_jobs = []
     
     try:
-        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div[data-test-id='job-listing']")))
-        time.sleep(0.5)
+        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "li.lLd3Je")))
+        time.sleep(1)
     except TimeoutException:
         print(f"Timeout waiting for job listings to load on page {page_num}")
         return page_jobs
     
-    job_elements = driver.find_elements(By.CSS_SELECTOR, "div[data-test-id='job-listing']")
+    job_elements = driver.find_elements(By.CSS_SELECTOR, "li.lLd3Je")
     
     if not job_elements:
         print("No job elements found")
@@ -53,17 +53,33 @@ def scrape_page_jobs(driver, wait, page_num):
                 'scraped_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             }
             
-            link_elem = job_elem.find_element(By.CSS_SELECTOR, "a[href*='/careers/job/']")
-            job_url = link_elem.get_attribute('href')
-            if job_url:
-                job_data['url'] = job_url
-                job_data['job_id'] = job_url.split('/careers/job/')[-1].split('/')[0].split('?')[0]
+            try:
+                title_elem = job_elem.find_element(By.CSS_SELECTOR, "h3.QJPWVe")
+                job_data['title'] = title_elem.text.strip()
+            except:
+                pass
             
-            title_elem = job_elem.find_element(By.CSS_SELECTOR, "div.title-1aNJK")
-            job_data['title'] = title_elem.text.strip()
+            try:
+                location_elem = job_elem.find_element(By.CSS_SELECTOR, "span.r0wTof")
+                job_data['location'] = location_elem.text.strip()
+            except:
+                pass
             
-            location_elem = job_elem.find_element(By.CSS_SELECTOR, "div.fieldValue-3kEar")
-            job_data['location'] = location_elem.text.strip()
+            try:
+                link_elem = job_elem.find_element(By.CSS_SELECTOR, "a.WpHeLc")
+                job_url = link_elem.get_attribute('href')
+                if job_url:
+                    if not job_url.startswith('http'):
+                        job_url = 'https://www.google.com/about/careers/applications/' + job_url
+                    job_data['url'] = job_url
+                    
+                    if '/results/' in job_url:
+                        job_id = job_url.split('/results/')[1].split('-')[0]
+                        job_data['job_id'] = job_id
+            except:
+                pass
+            
+            job_data['department'] = 'Google'
             
             if job_data['title'] and job_data['url']:
                 page_jobs.append(job_data)
@@ -79,45 +95,66 @@ def click_next_button(driver, wait):
     """Click the next page button and return True if successful"""
     try:
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(0.3)
+        time.sleep(1)
         
-        next_buttons = driver.find_elements(By.CSS_SELECTOR, "button.pagination-module_pagination-next__OHCf9")
+        current_url = driver.current_url
+        print(f"Current URL: {current_url}")
         
-        if not next_buttons:
+        next_button_selectors = [
+            "a.WpHeLc[aria-label='Go to next page']",
+            "div[jsname='ViaHrd'] a.WpHeLc",
+            "a[aria-label='Go to next page']"
+        ]
+        
+        next_button = None
+        for selector in next_button_selectors:
+            try:
+                buttons = driver.find_elements(By.CSS_SELECTOR, selector)
+                
+                for btn in buttons:
+                    try:
+                        href = btn.get_attribute('href')
+                        
+                        if href and 'page=' in href:
+                            next_button = btn
+                            print(f"Found next button with href: {href}")
+                            break
+                    except:
+                        continue
+                
+                if next_button:
+                    break
+            except:
+                continue
+        
+        if not next_button:
             print("\nNo next button found - reached end")
             return False
         
-        next_button = next_buttons[0]
+        next_url = next_button.get_attribute('href')
         
-        if not next_button.is_displayed() or not next_button.is_enabled():
-            print("\nNext button not available - reached end")
-            return False
+        driver.execute_script("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", next_button)
+        time.sleep(0.5)
         
-        aria_disabled = next_button.get_attribute('aria-disabled')
-        if aria_disabled == 'true':
-            print("\nNext button is disabled - reached end")
-            return False
+        print("Navigating to next page...")
+        driver.get(next_url)
         
-        driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", next_button)
-        time.sleep(0.2)
+        time.sleep(2)
         
-        driver.execute_script("arguments[0].click();", next_button)
-        print("\nClicked next button, loading next page...")
-        time.sleep(1.5)
-        
-        try:
-            wait.until(EC.staleness_of(next_button))
-            time.sleep(0.5)
+        new_url = driver.current_url
+        if new_url != current_url:
+            print(f"Successfully navigated to new page")
             return True
-        except:
-            return True
+        
+        print(f"Warning: URL did not change")
+        return False
         
     except Exception as e:
-        print(f"\nNo next button found or error: {e}")
+        print(f"\nError during pagination: {e}")
         return False
 
 
-def scrape_microsoft_jobs(url):
+def scrape_google_jobs(url):
     """Scrape jobs"""
     driver = setup_driver()
     jobs_data = []
@@ -163,7 +200,7 @@ def scrape_microsoft_jobs(url):
     return jobs_data
 
 
-def save_to_csv(jobs_data, filename='data/microsoft_jobs.csv'):
+def save_to_csv(jobs_data, filename='data/google_jobs.csv'):
     """Save job data to CSV file, appending new jobs only"""
     if not jobs_data:
         print("No data to save")
@@ -209,10 +246,10 @@ def save_to_csv(jobs_data, filename='data/microsoft_jobs.csv'):
 
 def main():
     """Main execution function"""
-    url = "https://apply.careers.microsoft.com/careers?start=0&location=New+York%2C+NY&pid=1970393556637073&sort_by=distance&filter_distance=160&filter_include_remote=1"
+    url = "https://www.google.com/about/careers/applications/jobs/results?location=New%20York%2C%20NY%2C%20USA&skills=software"
     
-    print("Starting Microsoft Jobs Scraper...")
-    jobs = scrape_microsoft_jobs(url)
+    print("Starting Google Jobs Scraper...")
+    jobs = scrape_google_jobs(url)
     
     if jobs:
         save_to_csv(jobs)
