@@ -46,12 +46,7 @@ COMPANIES = [
     "Microsoft",
     "Apple",
     "Amazon",
-    "Meta",
-    "Netflix",
-    "Spotify",
-    "Stripe",
-    "Airbnb",
-    "Uber",
+    "Meta"
 ]
 
 ROLES = [
@@ -74,11 +69,13 @@ LOCATIONS = [
     "San Francisco, CA",
     "Austin, TX",
     "Seattle, WA",
-    "Toronto, Canada",
-    "London, UK",
-    "Berlin, Germany",
     "Los Angeles, CA",
     "Chicago, IL",
+    "Boston, MA",
+    "Denver, CO",
+    "Atlanta, GA",
+    "Menlo Park, CA",
+    "Redmond, WA"
 ]
 
 JOB_TYPES = ["Full-time", "Part-time", "Contract", "Internship"]
