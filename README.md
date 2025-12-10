@@ -1,8 +1,8 @@
 [![Flask CI/CD pipeline](https://github.com/swe-students-fall2025/5-final-last-dance/actions/workflows/flask-app.yml/badge.svg?branch=main)](https://github.com/swe-students-fall2025/5-final-last-dance/actions/workflows/flask-app.yml)
 
-# PitchDeck
+# MAMG Tracker
 
-Pitchdeck scrapes top tech companies, ranks openings to your preferences, and keeps a live shortlist so you can spend time on the right applications.
+MAMG Tracker sorts job listings from Meta, Apple, Microsoft, and Google based on your preferences, helping you find the best matches.
 
 ### Container Images
 

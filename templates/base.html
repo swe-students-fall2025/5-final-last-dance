@@ -4,7 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}Pitchdeck{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='base.css') }}"
+    />
 
     {% block extra_css %}{% endblock %}
   </head>
@@ -23,7 +26,9 @@
         <a href="{{ url_for('profile') }}">Saved roles</a>
         <a href="{{ url_for('logout') }}">Logout</a>
         {% else %}
-        <a href="{{ url_for('preferences', user_id='testuser') }}">Preferences</a>
+        <a href="{{ url_for('preferences', user_id='testuser') }}"
+          >Preferences</a
+        >
         <a href="{{ url_for('login') }}">Login</a>
         <a href="{{ url_for('register') }}">Register</a>
         {% endif %}
@@ -38,18 +43,20 @@
           class="hero__badge hero__badge--link"
           aria-label="Go to Pitchdeck home"
         >
-          Pitchdeck
+          MAMG Tracker
         </a>
-        <h1 class="hero__title">Your curated deck of high-signal roles.</h1>
+        <h1 class="hero__title">Get a job at MAMG.</h1>
         <p class="hero__subtitle">
-          Pitchdeck scrapes top tech companies, ranks openings to your
-          preferences, and keeps a live shortlist so you can spend time on the
-          right applications.
+          MAMG Tracker sorts job listings from Meta, Apple, Microsoft, and
+          Google based on your preferences, helping you find the best matches.
         </p>
 
         <div class="hero__actions">
           <a href="{{ url_for('jobs') }}" class="btn-primary">Browse jobs</a>
-          <a href="{{ url_for('preferences', user_id='testuser') }}" class="btn-secondary">
+          <a
+            href="{{ url_for('preferences', user_id='testuser') }}"
+            class="btn-secondary"
+          >
             Edit preferences
           </a>
         </div>
@@ -57,15 +64,11 @@
         <div class="hero__meta">
           <div class="hero-pill">
             <span class="hero-pill__label">Live listings</span>
-            <span class="hero-pill__value">
-              {{ header_live_listings }}
-            </span>
+            <span class="hero-pill__value"> {{ header_live_listings }} </span>
           </div>
           <div class="hero-pill">
             <span class="hero-pill__label">Top matches</span>
-            <span class="hero-pill__value">
-              {{ header_top_matches }}
-            </span>
+            <span class="hero-pill__value"> {{ header_top_matches }} </span>
           </div>
         </div>
       </div>
@@ -78,11 +81,15 @@
           </div>
           <div class="hero-panel__row">
             <span class="hero-panel__label">Companies watched</span>
-            <span class="hero-panel__value">{{ header_companies_watched }}</span>
+            <span class="hero-panel__value"
+              >{{ header_companies_watched }}</span
+            >
           </div>
           <div class="hero-panel__row">
             <span class="hero-panel__label">Locations tracked</span>
-            <span class="hero-panel__value">{{ header_locations_tracked }}</span>
+            <span class="hero-panel__value"
+              >{{ header_locations_tracked }}</span
+            >
           </div>
           <div class="hero-panel__hint">
             Tweak your tiers in Preferences to reshape your deck in real time.
@@ -92,15 +99,13 @@
     </header>
     {% endif %}
 
-    <main class="content">
-      {% block content %}{% endblock %}
-    </main>
+    <main class="content">{% block content %}{% endblock %}</main>
 
     <footer class="site-footer">
       <div class="site-footer__left">
-        <span class="site-footer__brand">Last Dance</span>
+        <span class="site-footer__brand">MAMG Tracker</span>
         <span class="site-footer__meta">
-          Scraping and ranking roles so you can focus on the right applications.
+          Get a job at MAMG
         </span>
       </div>
 
@@ -112,9 +117,7 @@
         </a>
       </div>
 
-      <div class="site-footer__right">
-        © {{ current_year }} Pitchdeck
-      </div>
+      <div class="site-footer__right">© {{ current_year }} MAMG Tracker</div>
     </footer>
 
     <script src="{{ url_for('static', filename='main.js') }}"></script>
