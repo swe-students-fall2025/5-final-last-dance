@@ -43,11 +43,19 @@
         >
         <a
             class="card__overlay-link"
-            href="{{ url_for('job_detail', company_slug=job.company_slug, identifier=job.identifier, user_id=user_id) }}"
+            href="{{ url_for('job_detail', company_slug=job.company_slug, identifier=job.identifier) }}"
             aria-label="View details for {{ job.title }}"
         ></a>
 
-        <button class="card__favorite" type="button" aria-label="Favorite job">♡</button>
+        {% if current_user.is_authenticated %}
+        <button 
+          class="card__favorite {% if job.is_favorited %}card__favorite--active{% endif %}" 
+          type="button" 
+          aria-label="Favorite job"
+          data-company-slug="{{ job.company_slug }}"
+          data-identifier="{{ job.identifier }}"
+        >{% if job.is_favorited %}♥{% else %}♡{% endif %}</button>
+        {% endif %}
 
         <header class="card__header">
             <div>

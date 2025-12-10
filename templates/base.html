@@ -4,38 +4,54 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}Last Dance Job Board{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
   </head>
   <body>
-    <!-- Navigation Toggle -->
     <input type="checkbox" id="nav-toggle" class="nav-toggle" />
     <label for="nav-toggle" class="nav-hamburger">☰</label>
     <label for="nav-toggle" class="nav-overlay"></label>
 
-    <!-- Sidebar Navigation -->
     <aside class="nav-sidebar">
       <label for="nav-toggle" class="nav-close">✕</label>
       <nav class="nav-links">
         <a href="{{ url_for('home') }}">Home</a>
-        <!-- TODO: Replace testuser with session user when auth is integrated -->
-        <a href="{{ url_for('preferences', user_id='testuser') }}">Preferences</a>
+        <a href="{{ url_for('jobs') }}">All Jobs</a>
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('profile') }}">My Profile</a>
+        <a href="{{ url_for('preferences') }}">Preferences</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+        {% else %}
+        <a href="{{ url_for('login') }}">Login</a>
+        <a href="{{ url_for('register') }}">Register</a>
+        {% endif %}
       </nav>
     </aside>
 
+    {% if request.path != '/login' and request.path != '/register' %}
     <header class="hero hero--pitchdeck">
       <div class="hero__left">
         <span class="hero__badge">Pitchdeck</span>
         <h1 class="hero__title">Your curated deck of high-signal roles.</h1>
         <p class="hero__subtitle">
-          Pitchdeck scrapes top tech companies, ranks openings to your preferences,
-          and keeps a live shortlist so you can spend time on the right applications.
+          Pitchdeck scrapes top tech companies, ranks openings to your
+          preferences, and keeps a live shortlist so you can spend time on the
+          right applications.
         </p>
 
         <div class="hero__actions">
-          <a href="{{ url_for('home') }}" class="btn-primary">Browse jobs</a>
-          <a href="{{ url_for('preferences', user_id='testuser') }}" class="btn-secondary">
+          <a href="{{ url_for('jobs') }}" class="btn-primary">Browse jobs</a>
+          {% if current_user.is_authenticated %}
+          <a href="{{ url_for('preferences') }}" class="btn-secondary">
             Edit preferences
           </a>
+          {% else %}
+          <a href="{{ url_for('register') }}" class="btn-secondary">
+            Get started
+          </a>
+          {% endif %}
         </div>
 
         <div class="hero__meta">
@@ -62,11 +78,15 @@
           </div>
           <div class="hero-panel__row">
             <span class="hero-panel__label">Companies watched</span>
-            <span class="hero-panel__value">{{ companies|length if companies is defined else 10 }}</span>
+            <span class="hero-panel__value"
+              >{{ companies|length if companies is defined else 10 }}</span
+            >
           </div>
           <div class="hero-panel__row">
             <span class="hero-panel__label">Locations tracked</span>
-            <span class="hero-panel__value">{{ locations|length if locations is defined else 8 }}</span>
+            <span class="hero-panel__value"
+              >{{ locations|length if locations is defined else 8 }}</span
+            >
           </div>
           <div class="hero-panel__hint">
             Tweak your tiers in Preferences to reshape your deck in real time.
@@ -74,11 +94,9 @@
         </div>
       </div>
     </header>
+    {% endif %}
 
-
-    <main class="content">
-      {% block content %}{% endblock %}
-    </main>
+    <main class="content">{% block content %}{% endblock %}</main>
     <script src="{{ url_for('static', filename='main.js') }}"></script>
   </body>
 </html>

@@ -6,7 +6,7 @@
 
 <nav class="job-detail__nav">
   <a
-    href="{{ url_for('jobs', user_id=user_id) }}"
+    href="{{ url_for('jobs') }}"
     class="back-link"
     onclick="
       if (window.history.length > 1) {
@@ -17,6 +17,15 @@
     >
     ←
   </a>
+  {% if current_user.is_authenticated %}
+  <button 
+    class="job-detail__favorite {% if is_favorited %}job-detail__favorite--active{% endif %}" 
+    type="button" 
+    aria-label="Favorite job"
+    data-company-slug="{{ job.company_slug }}"
+    data-identifier="{{ job.identifier }}"
+  >{% if is_favorited %}♥{% else %}♡{% endif %}</button>
+  {% endif %}
 </nav>
 
 <section class="job-detail">

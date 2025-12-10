@@ -156,7 +156,6 @@ def scrape_meta_jobs(url):
             
             page_jobs = scrape_page_jobs(driver, wait, page_num)
             
-            # Add unique jobs only
             new_jobs_count = 0
             for job in page_jobs:
                 job_id = job.get('job_id') or job.get('url')
