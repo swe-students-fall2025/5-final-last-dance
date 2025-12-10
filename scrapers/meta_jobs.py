@@ -186,7 +186,7 @@ def scrape_meta_jobs(url):
 
 
 def save_to_csv(jobs_data, filename='data/meta_jobs.csv'):
-    """Save job data to CSV file"""
+    """Save job data to CSV file, appending new jobs only"""
     if not jobs_data:
         print("No data to save")
         return
@@ -195,13 +195,38 @@ def save_to_csv(jobs_data, filename='data/meta_jobs.csv'):
     
     fieldnames = ['title', 'location', 'department', 'job_id', 'url', 'scraped_at']
     
+    # Read existing jobs
+    existing_jobs = {}
+    if os.path.exists(filename):
+        try:
+            with open(filename, 'r', newline='', encoding='utf-8') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    job_id = row.get('job_id') or row.get('url')
+                    if job_id:
+                        existing_jobs[job_id] = row
+            print(f"Found {len(existing_jobs)} existing jobs in CSV")
+        except Exception as e:
+            print(f"Error reading existing CSV: {e}")
+    
+    # Add new jobs only
+    new_jobs = []
+    for job in jobs_data:
+        job_id = job.get('job_id') or job.get('url')
+        if job_id and job_id not in existing_jobs:
+            new_jobs.append(job)
+            existing_jobs[job_id] = job
+    
+    # Write all jobs (existing + new)
+    all_jobs = list(existing_jobs.values())
+    
     with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
-        writer.writerows(jobs_data)
+        writer.writerows(all_jobs)
     
-    print(f"\nData saved to {filename}")
-    print(f"Total jobs saved: {len(jobs_data)}")
+    print(f"\nAdded {len(new_jobs)} new jobs")
+    print(f"Total jobs in CSV: {len(all_jobs)}")
 
 
 def main():
