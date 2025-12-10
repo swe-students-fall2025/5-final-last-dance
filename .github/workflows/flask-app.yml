@@ -46,6 +46,8 @@ jobs:
     env:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+      MONGO_URI: ${{ secrets.MONGO_URI }}
+      MONGO_DBNAME: ${{ secrets.MONGO_DBNAME }}
 
     permissions:
       contents: read
@@ -86,6 +88,8 @@ jobs:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     env:
       DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
+      MONGO_URI: ${{ secrets.MONGO_URI }}
+      MONGO_DBNAME: ${{ secrets.MONGO_DBNAME }}
 
     steps:
       - uses: actions/checkout@v4
