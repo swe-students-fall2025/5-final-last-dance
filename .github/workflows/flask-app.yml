@@ -46,8 +46,6 @@ jobs:
     env:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-      MONGO_URI: ${{ secrets.MONGO_URI }}
-      MONGO_DBNAME: ${{ secrets.MONGO_DBNAME }}
 
     permissions:
       contents: read
@@ -75,6 +73,9 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: ${{ env.DOCKERHUB_USERNAME != '' }}
+          build-args: |
+            MONGO_URI=${{ secrets.MONGO_URI }}
+            MONGO_DBNAME=${{ secrets.MONGO_DBNAME }}
           tags: |
             ${{ env.REGISTRY }}/${{ env.DOCKERHUB_USERNAME }}/last-dance-job-board:latest
             ${{ env.REGISTRY }}/${{ env.DOCKERHUB_USERNAME }}/last-dance-job-board:${{ github.sha }}
