@@ -31,7 +31,7 @@ jobs:
             docker run -d \
               --name last-dance-job-board \
               --restart always \
-              -p 5001:5000 \
+              -p 80:5000 \
               -e MONGO_DBNAME="proj5User" \
               -e MONGO_URI="mongodb+srv://proj5User:NEW_PASSWORD_HERE@cluster0.handmek.mongodb.net/?appName=Cluster0" \
               alfardil28/last-dance-job-board:latest
