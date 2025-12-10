@@ -4,19 +4,34 @@ on:
   push:
     branches:
       - main
+  workflow_run:
+    workflows: ["flask-app"]
+    types:
+      - completed
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }} # Only run if build succeeded
     steps:
-      - name: Deploy via SSH
+      - name: Deploy to Droplet via SSH
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.DROPLET_IP }}
           username: ${{ secrets.DROPLET_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+
           script: |
-            cd /root/last-dance-job-board
-            git pull origin main
-            docker compose up -d --build
-            docker image prune -f
+
+            docker stop last-dance-job-board || true
+            docker rm last-dance-job-board || true
+
+            docker pull alfardil28/last-dance-job-board:latest
+
+            docker run -d \
+              --name last-dance-job-board \
+              --restart always \
+              -p 80:5000 \
+              -e MONGO_DBNAME="proj5User" \
+              -e MONGO_URI="mongodb+srv://proj5User:NEW_PASSWORD_HERE@cluster0.handmek.mongodb.net/?appName=Cluster0" \
+              alfardil28/last-dance-job-board:latest
