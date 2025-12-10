@@ -2,6 +2,10 @@
 
 {% block title %}Live Jobs{% endblock %}
 
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='jobs.css') }}" />
+{% endblock %}
+
 {% block content %}
 
 <div class="board-toolbar">
@@ -31,62 +35,51 @@
   </div>
 
   <div class="cards cards--board" id="job-board-cards">
-    {% for job in job_board %}
+  {% for job in job_board %}
     <article
-        class="card card--board"
-        data-company="{{ job.company|default('') }}"
-        data-location="{{ job.location|default('') }}"
-        data-type="{{ job.type|default('') }}"
-        data-tags="{{ job.tags|join(',') if job.tags else '' }}"
-        data-match="{{ job.match_score|default(0) }}"
-        data-remote="{{ 'true' if 'remote' in job.location|lower else 'false' }}"
-        >
-        <a
-            class="card__overlay-link"
-            href="{{ url_for('job_detail', company_slug=job.company_slug, identifier=job.identifier) }}"
-            aria-label="View details for {{ job.title }}"
-        ></a>
+      class="card card--board"
+      data-company="{{ job.company|default('') }}"
+      data-location="{{ job.location|default('') }}"
+      data-type="{{ job.type|default('') }}"
+      data-tags="{{ job.tags|join(',') if job.tags else '' }}"
+      data-match="{{ job.match_score|default(0) }}"
+      data-remote="{{ 'true' if 'remote' in job.location|lower else 'false' }}"
+    >
+      <a
+        class="card__overlay-link"
+        href="{{ url_for('job_detail', company_slug=job.company_slug, identifier=job.identifier, user_id=user_id) }}"
+        aria-label="View details for {{ job.title }}"
+      ></a>
 
-        {% if current_user.is_authenticated %}
-        <button 
-          class="card__favorite {% if job.is_favorited %}card__favorite--active{% endif %}" 
-          type="button" 
-          aria-label="Favorite job"
-          data-company-slug="{{ job.company_slug }}"
-          data-identifier="{{ job.identifier }}"
-        >{% if job.is_favorited %}♥{% else %}♡{% endif %}</button>
+      <button class="card__favorite" type="button" aria-label="Favorite job">♡</button>
+
+      {# top row: match only #}
+      <div class="card__meta card__meta--board">
+        {% if job.match_score is defined %}
+        <span class="tag tag--match tag--compact">Match {{ job.match_score }}%</span>
         {% endif %}
+      </div>
 
-        <header class="card__header">
-            <div>
-            <h3>{{ job.title }}</h3>
-            {% if job.company %}
-            <p class="card__company">{{ job.company }}</p>
-            {% endif %}
-            </div>
-            {% if job.posted %}
-            <span class="tag tag--secondary">{{ job.posted }}</span>
-            {% endif %}
-        </header>
-      <p class="card__summary">
-        {{ job.summary or 'Full description available on the source site.' }}
-      </p>
+      <h3>{{ job.title }}</h3>
+
+      {% if job.company %}
+      <div class="card__company-row card__company-row--pill">
+        <span class="tag tag--secondary tag--company-pill">
+          {{ job.company }}
+        </span>
+      </div>
+      {% endif %}
+
       {% if job.location %}
       <p class="card__location">{{ job.location }}</p>
       {% endif %}
-      {% if job.tags %}
-      <div class="tag-group">
-        {% for tag in job.tags %}
-        <span class="tag tag--pill">{{ tag }}</span>
-        {% endfor %}
-      </div>
-      {% endif %}
-      <div class="card__footer">
+
+      <div class="card__footer card__footer--board">
         {% if job.type %}
-        <span class="tag tag--soft">{{ job.type }}</span>
+        <span class="tag tag--soft tag--compact">{{ job.type }}</span>
         {% endif %}
-        {% if job.match_score is defined %}
-        <span class="card__posted">Match {{ job.match_score }}%</span>
+        {% if job.posted %}
+        <span class="card__posted">Posted {{ job.posted }}</span>
         {% endif %}
       </div>
     </article>

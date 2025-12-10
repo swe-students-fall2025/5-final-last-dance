@@ -473,7 +473,7 @@ def create_app():
                 or datetime.datetime(1970, 1, 1, tzinfo=timezone.utc)
             ),
             reverse=True,
-        )[:16]
+        )[:20] 
 
         return render_template(
             "index.html",
@@ -671,13 +671,83 @@ def create_app():
 
         return redirect(url_for("preferences", tab="job_types"))
 
+    def _header_metrics(user_id: str):
+        # Anything NOT tier 4 ("Not at all") counts as "tracked"
+        company_count = db.company_preferences.count_documents(
+            {"user_id": user_id, "rank": {"$ne": 4}}
+        )
+        location_count = db.location_preferences.count_documents(
+            {"user_id": user_id, "rank": {"$ne": 4}}
+        )
+        role_count = db.role_preferences.count_documents(
+            {"user_id": user_id, "rank": {"$ne": 4}}
+        )
+
+        job_type_doc = db.job_type_preferences.find_one({"user_id": user_id})
+        job_type_count = len(job_type_doc.get("types", [])) if job_type_doc else 0
+
+        # How many dimensions are you actively using?
+        dims_count = 0
+        if company_count:
+            dims_count += 1
+        if role_count:
+            dims_count += 1
+        if location_count:
+            dims_count += 1
+        if job_type_count:
+            dims_count += 1
+
+        # Map “how dialed-in are your prefs?” → a match-score focus %
+        threshold_map = {
+            0: "50%+",
+            1: "60%+",
+            2: "70%+",
+            3: "80%+",
+            4: "85%+",
+        }
+        match_focus = threshold_map.get(dims_count, "85%+")
+
+        return {
+            "match_focus": match_focus,
+            "companies_watched": company_count,
+            "locations_tracked": location_count,
+        }
+
+    @app.context_processor
+    def inject_global_header_metrics():
+        user_id = request.args.get("user_id", "testuser")
+
+        # 1) Pref-based metrics
+        summary = _header_metrics(user_id)
+
+        # 2) Job-based metrics (live listings + top matches), shared on all pages
+        try:
+            jobs = load_and_score_jobs(db, user_id)
+            header_live_listings = len(jobs)
+            header_top_matches = len(
+                sorted(jobs, key=lambda j: j.get("match_score", 0), reverse=True)[:8]
+            )
+        except Exception:
+            header_live_listings = 0
+            header_top_matches = 0
+
+        current_year = datetime.datetime.now().year
+
+        return dict(
+            header_match_focus=summary["match_focus"],
+            header_companies_watched=summary["companies_watched"],
+            header_locations_tracked=summary["locations_tracked"],
+            header_live_listings=header_live_listings,
+            header_top_matches=header_top_matches,
+            current_year=current_year,
+        )
+
     @app.errorhandler(Exception)
     def handle_error(e):
         """Output any errors - good for debugging."""
         return render_template("error.html", error=e)
 
     return app
-
 
 app = create_app()
 
