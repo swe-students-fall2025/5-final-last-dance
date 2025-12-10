@@ -1,0 +1,194 @@
+.card__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.card__company {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.card__company-row {
+  display: flex;
+  align-items: left;
+  justify-content: space-between; 
+  gap: 0.4rem;
+  margin-top: 0.7rem;
+}
+
+.card__company-row--pill {
+  justify-content: flex-start;
+}
+
+.cards--board {
+  margin-top: 0.7rem;
+}
+
+.card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.7rem;
+}
+
+.card__footer--board {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.cards--board .card__posted {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-left: auto;     
+}
+
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.cards--recommendations {
+  margin-bottom: 2rem;
+}
+
+.card {
+  background: var(--card);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  box-shadow: 0 15px 30px rgba(114, 110, 95, 0.08);
+  position: relative;
+  flex: 1 1 260px;
+}
+
+.card__overlay-link {
+  position: absolute;
+  inset: 0;
+  display: block;
+  text-decoration: none;
+  z-index: 5;        
+}
+
+.card__favorite {
+  position: relative;
+  z-index: 10;
+}
+
+.card h3 {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.card__location {
+  font-size: 0.95rem;
+  color: var(--muted);
+  margin: 0;
+}
+
+.card__meta {
+  display: flex;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.card__favorite {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  border: none;
+  background: rgba(125, 95, 255, 0.12);
+  color: #7d5fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(125, 95, 255, 0.1);
+  color: #4f2fcc;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.tag--soft {
+  background: rgba(246, 196, 78, 0.15);
+  color: #b77a12;
+}
+
+.tag--secondary {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  color: #433d33;
+}
+
+.tag--match {
+  background: rgba(125, 95, 255, 0.12);
+  color: #4f2fcc;
+  border-color: transparent;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 0.3rem 0.9rem;
+  font-size: 0.8rem;
+}
+
+.card--board {
+  position: relative;
+  min-height: 280px;
+}
+
+.card__meta--board {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.tag--company-pill {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.78rem;
+  line-height: 1;
+  font-weight: 600;
+}
+
+.tag--compact {
+  padding: 0.25rem 0.7rem;
+  font-size: 0.78rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.card {
+  gap: 0.7rem;
+}
+
+.card__meta--board,
+.card__company-row,
+.card__footer,
+.card__footer--board {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.cards--board .card {
+  flex: 0 0 320px;   
+}

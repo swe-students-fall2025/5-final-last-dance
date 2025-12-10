@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
 
-{% block title %}Preferences - Last Dance{% endblock %}
+{% block title %}Preferences{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='preferences.css') }}" />
+{% endblock %}
 
 {% block content %}
   <section class="preferences">

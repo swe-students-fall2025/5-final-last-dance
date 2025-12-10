@@ -1,5 +1,14 @@
-{% extends 'base.html' %} {% block title %}Profile - {{ user.username }}{%
-endblock %} {% block content %}
+{% extends 'base.html' %} 
+
+{% block title %}Profile - {{ user.username }}
+
+{%endblock %} 
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='profile.css') }}" />
+{% endblock %}
+
+{% block content %}
 
 <section class="profile-section">
   <div class="profile-header">
@@ -24,63 +33,60 @@ endblock %} {% block content %}
     <div class="cards cards--board">
       {% for job in favorited_jobs %}
       <article
-        class="card card--board"
-        data-company="{{ job.company|default('') }}"
-        data-location="{{ job.location|default('') }}"
-        data-type="{{ job.type|default('') }}"
-        data-tags="{{ job.tags|join(',') if job.tags else '' }}"
-        data-match="{{ job.match_score|default(0) }}"
-      >
-        <a
-          class="card__overlay-link"
-          href="{{ url_for('job_detail', company_slug=job.company_slug, identifier=job.identifier) }}"
-          aria-label="View details for {{ job.title }}"
-        ></a>
+      class="card card--board"
+      data-company="{{ job.company|default('') }}"
+      data-location="{{ job.location|default('') }}"
+      data-type="{{ job.type|default('') }}"
+      data-tags="{{ job.tags|join(',') if job.tags else '' }}"
+      data-match="{{ job.match_score|default(0) }}"
+      data-remote="{{ 'true' if 'remote' in job.location|lower else 'false' }}"
+    >
+      <a
+        class="card__overlay-link"
+        href="{{ url_for('job_detail', company_slug=job.company_slug, identifier=job.identifier, ) }}"
+        aria-label="View details for {{ job.title }}"
+      ></a>
 
-        <button
-          class="card__favorite card__favorite--active"
-          type="button"
-          aria-label="Unfavorite job"
-          data-company-slug="{{ job.company_slug }}"
-          data-identifier="{{ job.identifier }}"
-        >
-          ♥
-        </button>
+      {% if current_user.is_authenticated %}
+      <button 
+        class="card__favorite {% if job.is_favorited %}card__favorite--active{% endif %}" 
+        type="button" 
+        aria-label="Favorite job"
+        data-company-slug="{{ job.company_slug }}"
+        data-identifier="{{ job.identifier }}"
+      >{% if job.is_favorited %}♥{% else %}♡{% endif %}</button>
+      {% endif %}
 
-        <header class="card__header">
-          <div>
-            <h3>{{ job.title }}</h3>
-            {% if job.company %}
-            <p class="card__company">{{ job.company }}</p>
-            {% endif %}
-          </div>
-          {% if job.posted %}
-          <span class="tag tag--secondary">{{ job.posted }}</span>
-          {% endif %}
-        </header>
-
-        <p class="card__summary">
-          {{ job.summary or 'Full description available on the source site.' }}
-        </p>
-
-        {% if job.location %}
-        <p class="card__location">{{ job.location }}</p>
-        {% endif %} {% if job.tags %}
-        <div class="tag-group">
-          {% for tag in job.tags %}
-          <span class="tag tag--pill">{{ tag }}</span>
-          {% endfor %}
-        </div>
+      {# top row: match only #}
+      <div class="card__meta card__meta--board">
+        {% if job.match_score is defined %}
+        <span class="tag tag--match tag--compact">Match {{ job.match_score }}%</span>
         {% endif %}
+      </div>
 
-        <div class="card__footer">
-          {% if job.type %}
-          <span class="tag tag--soft">{{ job.type }}</span>
-          {% endif %} {% if job.match_score is defined %}
-          <span class="card__posted">Match {{ job.match_score }}%</span>
-          {% endif %}
-        </div>
-      </article>
+      <h3>{{ job.title }}</h3>
+
+      {% if job.company %}
+      <div class="card__company-row card__company-row--pill">
+        <span class="tag tag--secondary tag--company-pill">
+          {{ job.company }}
+        </span>
+      </div>
+      {% endif %}
+
+      {% if job.location %}
+      <p class="card__location">{{ job.location }}</p>
+      {% endif %}
+
+      <div class="card__footer card__footer--board">
+        {% if job.type %}
+        <span class="tag tag--soft tag--compact">{{ job.type }}</span>
+        {% endif %}
+        {% if job.posted %}
+        <span class="card__posted">Posted {{ job.posted }}</span>
+        {% endif %}
+      </div>
+    </article>
       {% endfor %}
     </div>
     {% else %}
