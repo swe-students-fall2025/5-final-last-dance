@@ -26,7 +26,7 @@ from flask_login import (
 import pymongo
 from bson.objectid import ObjectId
 from dotenv import load_dotenv
-from urllib.parse import quote
+from urllib.parse import quote, unquote
 from werkzeug.security import generate_password_hash, check_password_hash
 
 load_dotenv()
@@ -86,6 +86,7 @@ DEFAULT_TIER = 3
 
 EPOCH = datetime.datetime(1970, 1, 1, tzinfo=timezone.utc)
 
+
 def get_recommended_jobs(jobs, min_score: int = 40, limit: int = 8):
     """
     Pick the jobs that best match the user's preferences:
@@ -93,6 +94,7 @@ def get_recommended_jobs(jobs, min_score: int = 40, limit: int = 8):
     - sorted by score, then recency
     - fallback to top jobs if there aren't enough above threshold
     """
+
     def sort_key(j):
         return (
             j.get("match_score", 0),
@@ -107,6 +109,7 @@ def get_recommended_jobs(jobs, min_score: int = 40, limit: int = 8):
         filtered = sorted(jobs, key=sort_key, reverse=True)
 
     return filtered[:limit]
+
 
 class User(UserMixin):
     def __init__(self, user_id, username, email):
@@ -186,6 +189,7 @@ def load_jobs_from_csv(path: str, company_name: str):
 
     print(f"[CSV] Loaded {len(jobs)} jobs for {company_name}")
     return jobs
+
 
 def _tier_multiplier(rank: int) -> int:
     """
@@ -425,30 +429,34 @@ def create_app():
             total_favorites=len(favorited_jobs),
         )
 
-    @app.route("/favorite/<company_slug>/<identifier>", methods=["POST"])
+    @app.route("/favorite/<company_slug>/<path:identifier>", methods=["POST"])
     @login_required
     def toggle_favorite(company_slug, identifier):
         """Toggle favorite status for a job."""
         user_id = current_user.id
 
+        # Flask automatically decodes URL path parameters
+        # Our stored identifiers are URL-encoded, so decode them for comparison
         all_jobs = load_and_score_jobs(db, user_id)
-        job = next(
-            (
-                j
-                for j in all_jobs
-                if j.get("identifier") == identifier
-                and j.get("company_slug") == company_slug
-            ),
-            None,
-        )
+        job = None
+        for j in all_jobs:
+            stored_identifier = j.get("identifier", "")
+            stored_decoded = unquote(stored_identifier)
+
+            # Compare decoded versions (Flask decodes the URL parameter automatically)
+            if stored_decoded == identifier and j.get("company_slug") == company_slug:
+                job = j
+                break
 
         if not job:
             return jsonify({"error": "Job not found"}), 404
 
         company = job.get("company") or "Unknown"
+        # Use the stored identifier (URL-encoded) for database operations
+        db_identifier = job.get("identifier")
 
         existing = db.favorites.find_one(
-            {"user_id": user_id, "company": company, "identifier": identifier}
+            {"user_id": user_id, "company": company, "identifier": db_identifier}
         )
 
         if existing:
@@ -460,7 +468,7 @@ def create_app():
                 {
                     "user_id": user_id,
                     "company": company,
-                    "identifier": identifier,
+                    "identifier": db_identifier,
                     "company_slug": company_slug,
                     "created_at": now,
                 }
@@ -488,21 +496,13 @@ def create_app():
 
         trending_jobs = sorted(
             jobs,
-            key=lambda j: (
-                j.get("scraped_at")
-                or j.get("posted_date")
-                or EPOCH
-            ),
+            key=lambda j: (j.get("scraped_at") or j.get("posted_date") or EPOCH),
             reverse=True,
         )[:10]
 
         live_preview = sorted(
             jobs,
-            key=lambda j: (
-                j.get("scraped_at")
-                or j.get("posted_date")
-                or EPOCH
-            ),
+            key=lambda j: (j.get("scraped_at") or j.get("posted_date") or EPOCH),
             reverse=True,
         )[:20]
 
@@ -542,7 +542,7 @@ def create_app():
             total_live_jobs=len(jobs),
         )
 
-    @app.route("/jobs/<company_slug>/<identifier>")
+    @app.route("/jobs/<company_slug>/<path:identifier>")
     def job_detail(company_slug, identifier):
         """Detail page for a single job."""
         user_id = current_user.id if current_user.is_authenticated else "testuser"
@@ -550,37 +550,37 @@ def create_app():
         is_favorited = False
         if current_user.is_authenticated:
             all_jobs = load_and_score_jobs(db, user_id)
-            job = next(
-                (
-                    j
-                    for j in all_jobs
-                    if j.get("identifier") == identifier
+            job = None
+            for j in all_jobs:
+                stored_identifier = j.get("identifier", "")
+                stored_decoded = unquote(stored_identifier)
+                if (
+                    stored_decoded == identifier
                     and j.get("company_slug") == company_slug
-                ),
-                None,
-            )
+                ):
+                    job = j
+                    break
             if job:
                 company = job.get("company") or "Unknown"
+                db_identifier = job.get("identifier")
                 favorite = db.favorites.find_one(
                     {
                         "user_id": current_user.id,
                         "company": company,
-                        "identifier": identifier,
+                        "identifier": db_identifier,
                     }
                 )
                 is_favorited = favorite is not None
 
         jobs = load_and_score_jobs(db, user_id)
 
-        job = next(
-            (
-                j
-                for j in jobs
-                if j.get("identifier") == identifier
-                and j.get("company_slug") == company_slug
-            ),
-            None,
-        )
+        job = None
+        for j in jobs:
+            stored_identifier = j.get("identifier", "")
+            stored_decoded = unquote(stored_identifier)
+            if stored_decoded == identifier and j.get("company_slug") == company_slug:
+                job = j
+                break
 
         if not job:
             abort(404)
@@ -811,6 +811,7 @@ def create_app():
         return render_template("error.html", error=e)
 
     return app
+
 
 app = create_app()
 
