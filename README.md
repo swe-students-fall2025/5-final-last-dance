@@ -2,9 +2,11 @@
 
 # PitchDeck
 
-#### Pitchdeck scrapes top tech companies, ranks openings to your preferences, and keeps a live shortlist so you can spend time on the right applications.
+Pitchdeck scrapes top tech companies, ranks openings to your preferences, and keeps a live shortlist so you can spend time on the right applications.
 
-An exercise to put to practice software development teamwork, subsystem communication, containers, deployment, and CI/CD pipelines. See [instructions](./instructions.md) for details.
+### Container Images
+
+[This](https://hub.docker.com/r/alfardil28/pitchdeck) container runs the entire application.
 
 - [Alif](https://github.com/Alif-4)
 - [Alfardil](https://github.com/alfardil)
@@ -30,3 +32,7 @@ Then install dependencies and run
 `python app.py` or `flask run`
 
 Visit: http://127.0.0.1:5000
+
+### Running
+
+You may either `flask run` after installing all dependencies or simply run the docker container and choose a port to host it on.
