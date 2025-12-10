@@ -1,4 +1,4 @@
-[![Build and Deploy Flask App](https://github.com/swe-students-fall2025/5-final-last-dance/actions/workflows/flask-app.yml/badge.svg?branch=main)](https://github.com/swe-students-fall2025/5-final-last-dance/actions/workflows/flask-app.yml) [![Test Coverage](https://codecov.io/gh/swe-students-fall2025/5-final-last-dance/branch/main/graph/badge.svg?flag=codecov-umbrella)](https://codecov.io/gh/swe-students-fall2025/5-final-last-dance)
+[![Build and Deploy Flask App](https://github.com/swe-students-fall2025/5-final-last-dance/actions/workflows/flask-app.yml/badge.svg?branch=main)](https://github.com/swe-students-fall2025/5-final-last-dance/actions/workflows/flask-app.yml)
 
 # MAMG Tracker
 
@@ -7,6 +7,8 @@ MAMG Tracker — Final Project (SWE)
 ## Overview
 
 MAMG Tracker aggregates job listings from Meta, Apple, Microsoft, Amazon, and Google, then ranks them based on your preferences. We built this because job hunting across multiple company sites is tedious. The app scrapes listings daily, scores each job against what you're looking for, and shows you the best matches first.
+
+Live website: http://143.198.26.255/
 
 ## Contributors
 
