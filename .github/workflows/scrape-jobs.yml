@@ -1,0 +1,85 @@
+name: Run Job Scrapers
+
+on:
+  schedule:
+    # runs at 11:00am EST daily
+    - cron: '0 16 * * *'
+  workflow_dispatch: # to test manually
+
+jobs:
+  scrape-jobs:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Install Chrome
+        run: |
+          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+          
+      - name: Install ChromeDriver
+        run: |
+          CHROME_VERSION=$(google-chrome --version | awk '{print $3}' | cut -d '.' -f 1)
+          wget -q "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_VERSION}" -O /tmp/latest_version
+          CHROMEDRIVER_VERSION=$(cat /tmp/latest_version)
+          wget -q "https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip" -O /tmp/chromedriver.zip
+          sudo unzip -o /tmp/chromedriver.zip -d /usr/local/bin/
+          sudo chmod +x /usr/local/bin/chromedriver
+          chromedriver --version
+          
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install selenium
+          
+      - name: Run Meta scraper
+        continue-on-error: true
+        run: |
+          cd scrapers
+          python meta_jobs.py
+          
+      - name: Run Microsoft scraper
+        continue-on-error: true
+        run: |
+          cd scrapers
+          python microsoft_jobs.py
+          
+      - name: Run Amazon scraper
+        continue-on-error: true
+        run: |
+          cd scrapers
+          python amazon_jobs.py
+          
+      - name: Run Google scraper
+        continue-on-error: true
+        run: |
+          cd scrapers
+          python google_jobs.py
+          
+      - name: Run Apple scraper
+        continue-on-error: true
+        run: |
+          cd scrapers
+          python apple_jobs.py
+          
+      - name: Combine all jobs
+        run: |
+          cd scrapers
+          python combine_jobs.py
+          
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add scrapers/data/*.csv
+          git diff --staged --quiet || git commit -m "Update job listings - $(date +'%Y-%m-%d %H:%M:%S UTC')"
+          git push
