@@ -29,6 +29,6 @@ jobs:
               --name last-dance-job-board \
               --restart always \
               -p 80:5000 \
-              -e MONGO_DBNAME="proj5User" \
-              -e MONGO_URI="mongodb+srv://proj5User:NEW_PASSWORD_HERE@cluster0.handmek.mongodb.net/?appName=Cluster0" \
+              -e MONGO_DBNAME="${{ secrets.MONGO_DBNAME }}" \
+              -e MONGO_URI="${{ secrets.MONGO_URI }}" \
               alfardil28/last-dance-job-board:latest
