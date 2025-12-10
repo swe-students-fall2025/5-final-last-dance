@@ -35,6 +35,9 @@ CSV_DIR = os.path.join("scrapers", "data")
 CSV_SOURCES = [
     (os.path.join(CSV_DIR, "meta_internships.csv"), "Meta"),
     (os.path.join(CSV_DIR, "microsoft_jobs.csv"), "Microsoft"),
+    (os.path.join(CSV_DIR, "amazon_jobs.csv"), "Amazon"),
+    (os.path.join(CSV_DIR, "google_jobs.csv"), "Google"),
+    (os.path.join(CSV_DIR, "apple_jobs.csv"), "Apple"),
 ]
 
 COMPANIES = [
@@ -88,6 +91,29 @@ TIERS = [
 
 DEFAULT_TIER = 3
 
+EPOCH = datetime.datetime(1970, 1, 1, tzinfo=timezone.utc)
+
+def get_recommended_jobs(jobs, min_score: int = 40, limit: int = 8):
+    """
+    Pick the jobs that best match the user's preferences:
+    - only jobs at or above min_score
+    - sorted by score, then recency
+    - fallback to top jobs if there aren't enough above threshold
+    """
+    def sort_key(j):
+        return (
+            j.get("match_score", 0),
+            j.get("scraped_at") or j.get("posted_date") or EPOCH,
+        )
+
+    filtered = [j for j in jobs if j.get("match_score", 0) >= min_score]
+    filtered.sort(key=sort_key, reverse=True)
+
+    # Fallback: if user hasn't set many prefs yet, just use top jobs overall
+    if len(filtered) < limit:
+        filtered = sorted(jobs, key=sort_key, reverse=True)
+
+    return filtered[:limit]
 
 class User(UserMixin):
     def __init__(self, user_id, username, email):
@@ -145,6 +171,7 @@ def load_jobs_from_csv(path: str, company_name: str):
                     tag = part.replace("more", "").strip()
                     if tag:
                         tags.append(tag)
+            primary_location = None
             if location:
                 primary_location = location.split("+")[0].strip()
                 if primary_location and primary_location not in tags:
@@ -153,6 +180,7 @@ def load_jobs_from_csv(path: str, company_name: str):
             job = {
                 "title": title,
                 "location": location,
+                "primary_location": primary_location or location,
                 "department": department,
                 "job_id": job_id,
                 "url": url,
@@ -166,6 +194,17 @@ def load_jobs_from_csv(path: str, company_name: str):
 
     print(f"[CSV] Loaded {len(jobs)} jobs for {company_name}")
     return jobs
+
+def _tier_multiplier(rank: int) -> int:
+    """
+    Map preference tier to multiplier:
+      1 (Target)     -> strong positive
+      2 (Good)       -> medium positive
+      3 (Safety)     -> small positive
+      4 (Not at all) -> negative
+    """
+    mapping = {1: 3, 2: 2, 3: 1, 4: -2}
+    return mapping.get(rank, 0)
 
 
 def score_jobs_for_user(db, user_id: str, jobs, mark_favorites=False):
@@ -208,12 +247,12 @@ def score_jobs_for_user(db, user_id: str, jobs, mark_favorites=False):
         company = job.get("company")
         if company in company_prefs:
             rank = company_prefs[company]
-            score += (5 - rank) * 22
+            score += _tier_multiplier(rank) * 22
 
-        location = job.get("location")
+        location = job.get("primary_location") or job.get("location")
         if location in location_prefs:
             rank = location_prefs[location]
-            score += (5 - rank) * 18
+            score += _tier_multiplier(rank) * 18
 
         role = job.get("role") or job.get("title")
         if role:
@@ -221,7 +260,7 @@ def score_jobs_for_user(db, user_id: str, jobs, mark_favorites=False):
                 if canonical_role.lower() in str(role).lower():
                     rank = role_prefs.get(canonical_role)
                     if rank:
-                        score += (5 - rank) * 20
+                        score += _tier_multiplier(rank) * 20
                     break
 
         jtype = job.get("type")
@@ -451,16 +490,14 @@ def create_app():
 
         jobs = load_and_score_jobs(db, user_id)
 
-        recommended_jobs = sorted(
-            jobs, key=lambda j: j.get("match_score", 0), reverse=True
-        )[:8]
+        recommended_jobs = get_recommended_jobs(jobs)  # <— key change
 
         trending_jobs = sorted(
             jobs,
             key=lambda j: (
                 j.get("scraped_at")
                 or j.get("posted_date")
-                or datetime.datetime(1970, 1, 1, tzinfo=timezone.utc)
+                or EPOCH
             ),
             reverse=True,
         )[:10]
@@ -470,10 +507,10 @@ def create_app():
             key=lambda j: (
                 j.get("scraped_at")
                 or j.get("posted_date")
-                or datetime.datetime(1970, 1, 1, tzinfo=timezone.utc)
+                or EPOCH
             ),
             reverse=True,
-        )[:20] 
+        )[:20]
 
         return render_template(
             "index.html",
@@ -715,7 +752,7 @@ def create_app():
 
     @app.context_processor
     def inject_global_header_metrics():
-        user_id = request.args.get("user_id", "testuser")
+        user_id = current_user.id if current_user.is_authenticated else "testuser"
 
         # 1) Pref-based metrics
         summary = _header_metrics(user_id)
