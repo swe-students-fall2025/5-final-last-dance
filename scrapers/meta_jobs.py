@@ -185,7 +185,7 @@ def scrape_meta_jobs(url):
 
 
 def save_to_csv(jobs_data, filename='data/meta_jobs.csv'):
-    """Save job data to CSV file, appending new jobs only"""
+    """Save job data to CSV file, keeping only active jobs and preserving original scraped_at dates"""
     if not jobs_data:
         print("No data to save")
         return
@@ -194,7 +194,7 @@ def save_to_csv(jobs_data, filename='data/meta_jobs.csv'):
     
     fieldnames = ['title', 'location', 'department', 'job_id', 'url', 'scraped_at']
     
-    # Read existing jobs
+    # Read existing jobs to preserve scraped_at dates
     existing_jobs = {}
     if os.path.exists(filename):
         try:
@@ -208,29 +208,37 @@ def save_to_csv(jobs_data, filename='data/meta_jobs.csv'):
         except Exception as e:
             print(f"Error reading existing CSV: {e}")
     
-    # Add new jobs only
+    # Process current jobs and preserve original scraped_at dates
+    active_jobs = []
     new_jobs = []
+    delisted_count = len(existing_jobs)
+    
     for job in jobs_data:
         job_id = job.get('job_id') or job.get('url')
-        if job_id and job_id not in existing_jobs:
-            new_jobs.append(job)
-            existing_jobs[job_id] = job
+        if job_id:
+            if job_id in existing_jobs:
+                # Preserve original scraped_at date for existing jobs
+                job['scraped_at'] = existing_jobs[job_id]['scraped_at']
+            else:
+                new_jobs.append(job)
+            active_jobs.append(job)
     
-    # Write all jobs (existing + new)
-    all_jobs = list(existing_jobs.values())
+    delisted_count -= len(active_jobs) - len(new_jobs)
     
+    # Write only active jobs
     with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
-        writer.writerows(all_jobs)
+        writer.writerows(active_jobs)
     
     print(f"\nAdded {len(new_jobs)} new jobs")
-    print(f"Total jobs in CSV: {len(all_jobs)}")
+    print(f"Removed {delisted_count} delisted jobs")
+    print(f"Total active jobs in CSV: {len(active_jobs)}")
 
 
 def main():
     """Main execution function"""
-    url = "https://www.metacareers.com/jobsearch?sort_by_new=true&offices[0]=New%20York%2C%20NY&teams[0]=Technical%20Program%20Management&teams[1]=Software%20Engineering&teams[2]=Research&teams[3]=Data%20%26%20Analytics&teams[4]=Artificial%20Intelligence&teams[5]=Advertising%20Technology&teams[6]=AR%2FVR"
+    url = "https://www.metacareers.com/jobsearch?sort_by_new=true&offices[0]=Seattle%2C%20WA&offices[1]=New%20York%2C%20NY&offices[2]=San%20Francisco%2C%20CA&offices[3]=Sunnyvale%2C%20CA&teams[0]=Technical%20Program%20Management&teams[1]=Software%20Engineering&teams[2]=Research&teams[3]=Data%20%26%20Analytics&teams[4]=Artificial%20Intelligence&teams[5]=Advertising%20Technology&teams[6]=AR%2FVR"
     
     print("Starting Meta Jobs Scraper...")
     jobs = scrape_meta_jobs(url)

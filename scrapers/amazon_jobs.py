@@ -208,7 +208,7 @@ def scrape_amazon_jobs(url):
 
 
 def save_to_csv(jobs_data, filename='data/amazon_jobs.csv'):
-    """Save job data to CSV file, appending new jobs only"""
+    """Save job data to CSV file, keeping only active jobs and preserving original scraped_at dates"""
     if not jobs_data:
         print("No data to save")
         return
@@ -217,7 +217,7 @@ def save_to_csv(jobs_data, filename='data/amazon_jobs.csv'):
     
     fieldnames = ['title', 'location', 'department', 'job_id', 'url', 'scraped_at']
     
-    # Read existing jobs
+    # Read existing jobs to preserve scraped_at dates
     existing_jobs = {}
     if os.path.exists(filename):
         try:
@@ -231,29 +231,37 @@ def save_to_csv(jobs_data, filename='data/amazon_jobs.csv'):
         except Exception as e:
             print(f"Error reading existing CSV: {e}")
     
-    # Add new jobs only
+    # Process current jobs and preserve original scraped_at dates
+    active_jobs = []
     new_jobs = []
+    delisted_count = len(existing_jobs)
+    
     for job in jobs_data:
         job_id = job.get('job_id') or job.get('url')
-        if job_id and job_id not in existing_jobs:
-            new_jobs.append(job)
-            existing_jobs[job_id] = job
+        if job_id:
+            if job_id in existing_jobs:
+                # Preserve original scraped_at date for existing jobs
+                job['scraped_at'] = existing_jobs[job_id]['scraped_at']
+            else:
+                new_jobs.append(job)
+            active_jobs.append(job)
     
-    # Write all jobs (existing + new)
-    all_jobs = list(existing_jobs.values())
+    delisted_count -= len(active_jobs) - len(new_jobs)
     
+    # Write only active jobs
     with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
-        writer.writerows(all_jobs)
+        writer.writerows(active_jobs)
     
     print(f"\nAdded {len(new_jobs)} new jobs")
-    print(f"Total jobs in CSV: {len(all_jobs)}")
+    print(f"Removed {delisted_count} delisted jobs")
+    print(f"Total active jobs in CSV: {len(active_jobs)}")
 
 
 def main():
     """Main execution function"""
-    url = "https://www.amazon.jobs/en/search?offset=0&result_limit=10&sort=relevant&category%5B%5D=machine-learning-science&category%5B%5D=software-development&category%5B%5D=project-program-product-management-technical&category%5B%5D=data-science&job_type%5B%5D=Full-Time&state%5B%5D=New%20York&distanceType=Mi&radius=24km&latitude=40.71453&longitude=-74.00712&loc_group_id=&loc_query=New%20York%2C%20NY%2C%20United%20States&base_query=&city=New%20York&country=USA&region=New%20York&county=New%20York&query_options=&"
+    url = "https://www.amazon.jobs/en/search?offset=0&result_limit=10&sort=relevant&category%5B%5D=software-development&category%5B%5D=project-program-product-management-technical&category%5B%5D=machine-learning-science&category%5B%5D=systems-quality-security-engineering&country%5B%5D=USA&distanceType=Mi&radius=24km&latitude=38.89036&longitude=-77.03196&loc_group_id=&loc_query=&base_query=&city=&country=USA&region=&county=&query_options=&"
     
     print("Starting Amazon Jobs Scraper...")
     jobs = scrape_amazon_jobs(url)

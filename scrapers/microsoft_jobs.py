@@ -29,7 +29,7 @@ def scrape_page_jobs(driver, wait, page_num):
     
     try:
         wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div[data-test-id='job-listing']")))
-        time.sleep(0.5)
+        time.sleep(0.2)
     except TimeoutException:
         print(f"Timeout waiting for job listings to load on page {page_num}")
         return page_jobs
@@ -79,7 +79,7 @@ def click_next_button(driver, wait):
     """Click the next page button and return True if successful"""
     try:
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(0.3)
+        time.sleep(0.2)
         
         next_buttons = driver.find_elements(By.CSS_SELECTOR, "button.pagination-module_pagination-next__OHCf9")
         
@@ -99,15 +99,15 @@ def click_next_button(driver, wait):
             return False
         
         driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", next_button)
-        time.sleep(0.2)
+        time.sleep(0.1)
         
         driver.execute_script("arguments[0].click();", next_button)
         print("\nClicked next button, loading next page...")
-        time.sleep(1.5)
+        time.sleep(0.8)
         
         try:
             wait.until(EC.staleness_of(next_button))
-            time.sleep(0.5)
+            time.sleep(0.2)
             return True
         except:
             return True
@@ -127,7 +127,7 @@ def scrape_microsoft_jobs(url):
         print(f"Loading page: {url}")
         driver.get(url)
         
-        wait = WebDriverWait(driver, 20)
+        wait = WebDriverWait(driver, 10)
         page_num = 1
         
         while True:
@@ -164,7 +164,7 @@ def scrape_microsoft_jobs(url):
 
 
 def save_to_csv(jobs_data, filename='data/microsoft_jobs.csv'):
-    """Save job data to CSV file, appending new jobs only"""
+    """Save job data to CSV file, keeping only active jobs and preserving original scraped_at dates"""
     if not jobs_data:
         print("No data to save")
         return
@@ -173,7 +173,7 @@ def save_to_csv(jobs_data, filename='data/microsoft_jobs.csv'):
     
     fieldnames = ['title', 'location', 'department', 'job_id', 'url', 'scraped_at']
     
-    # Read existing jobs
+    # Read existing jobs to preserve scraped_at dates
     existing_jobs = {}
     if os.path.exists(filename):
         try:
@@ -187,29 +187,37 @@ def save_to_csv(jobs_data, filename='data/microsoft_jobs.csv'):
         except Exception as e:
             print(f"Error reading existing CSV: {e}")
     
-    # Add new jobs only
+    # Process current jobs and preserve original scraped_at dates
+    active_jobs = []
     new_jobs = []
+    delisted_count = len(existing_jobs)
+    
     for job in jobs_data:
         job_id = job.get('job_id') or job.get('url')
-        if job_id and job_id not in existing_jobs:
-            new_jobs.append(job)
-            existing_jobs[job_id] = job
+        if job_id:
+            if job_id in existing_jobs:
+                # Preserve original scraped_at date for existing jobs
+                job['scraped_at'] = existing_jobs[job_id]['scraped_at']
+            else:
+                new_jobs.append(job)
+            active_jobs.append(job)
     
-    # Write all jobs (existing + new)
-    all_jobs = list(existing_jobs.values())
+    delisted_count -= len(active_jobs) - len(new_jobs)
     
+    # Write only active jobs
     with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
-        writer.writerows(all_jobs)
+        writer.writerows(active_jobs)
     
     print(f"\nAdded {len(new_jobs)} new jobs")
-    print(f"Total jobs in CSV: {len(all_jobs)}")
+    print(f"Removed {delisted_count} delisted jobs")
+    print(f"Total active jobs in CSV: {len(active_jobs)}")
 
 
 def main():
     """Main execution function"""
-    url = "https://apply.careers.microsoft.com/careers?start=0&location=New+York%2C+NY&pid=1970393556637073&sort_by=distance&filter_distance=160&filter_include_remote=1"
+    url = "https://apply.careers.microsoft.com/careers?start=0&location=united+states&pid=1970393556628754&sort_by=distance&filter_include_remote=1&filter_profession=program+management%2Chardware+engineering%2Cquantum+computing%2Canalytics%2Csoftware+engineering%2Cresearch%252C%2520applied%252C%2520%2526%2520data%2520sciences%2Cproduct+management"
     
     print("Starting Microsoft Jobs Scraper...")
     jobs = scrape_microsoft_jobs(url)
