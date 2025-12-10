@@ -13,24 +13,24 @@ jobs:
       PYTHONPATH: ${{ github.workspace }}
       MONGO_URI: ${{ secrets.MONGO_URI }}
       MONGO_DBNAME: ${{ secrets.MONGO_DBNAME }}
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.12'
-      
+          python-version: "3.12"
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install pipenv
           pipenv sync --dev --python $(which python)
-      
+
       - name: Run tests
         run: pipenv run pytest tests/ -v --cov=app --cov-report=xml
-      
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
@@ -46,24 +46,24 @@ jobs:
     env:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-    
+
     permissions:
       contents: read
       packages: write
 
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ env.DOCKERHUB_USERNAME }}
           password: ${{ env.DOCKERHUB_TOKEN }}
         continue-on-error: true
-      
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -74,7 +74,7 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.DOCKERHUB_USERNAME }}/last-dance-job-board:${{ github.sha }}
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.DOCKERHUB_USERNAME }}/last-dance-job-board:buildcache
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.DOCKERHUB_USERNAME }}/last-dance-job-board:buildcache,mode=max
-        continue-on-error: true
+        continue-on-error: false
 
   deploy:
     needs: build
@@ -82,13 +82,12 @@ jobs:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     env:
       DIGITALOCEAN_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN }}
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Deploy to DigitalOcean
         run: |
           echo "DigitalOcean deployment configured and ready"
           echo "Update this step with your app.yaml or doctl commands when ready"
         continue-on-error: true
-
