@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ job.title }} – {{ job.company or 'Job' }}{% endblock %}
+
+{% block content %}
+
+<nav class="job-detail__nav">
+  <a
+    href="{{ url_for('jobs', user_id=user_id) }}"
+    class="back-link"
+    onclick="
+      if (window.history.length > 1) {
+        window.history.back();
+        return false; 
+      }
+    "
+    >
+    ←
+  </a>
+</nav>
+
+<section class="job-detail">
+  <header class="job-detail__header">
+    <div>
+      {% if job.company %}
+      <p class="job-detail__company">{{ job.company }}</p>
+      {% endif %}
+      <h1 class="job-detail__title">{{ job.title }}</h1>
+      {% if job.location %}
+      <p class="job-detail__location">{{ job.location }}</p>
+      {% endif %}
+    </div>
+    <div class="job-detail__meta-pill">
+      {% if job.match_score is defined %}
+      <span class="tag">Match {{ job.match_score }}%</span>
+      {% endif %}
+      {% if job.posted %}
+      <span class="tag tag--secondary">Posted {{ job.posted }}</span>
+      {% endif %}
+    </div>
+  </header>
+
+  <div class="job-detail__meta-grid">
+    {% if job.type %}
+    <div class="job-detail__meta-item">
+      <span class="job-detail__meta-label">Job type</span>
+      <span class="job-detail__meta-value">{{ job.type }}</span>
+    </div>
+    {% endif %}
+
+    {% if job.department %}
+    <div class="job-detail__meta-item">
+      <span class="job-detail__meta-label">Team / Department</span>
+      <span class="job-detail__meta-value">{{ job.department }}</span>
+    </div>
+    {% endif %}
+
+    {% if job.scraped_at %}
+    <div class="job-detail__meta-item">
+      <span class="job-detail__meta-label">Last updated</span>
+      <span class="job-detail__meta-value">
+        {{ job.scraped_at.strftime('%b %d, %Y %H:%M') if job.scraped_at.__class__.__name__ == 'datetime' else job.scraped_at }}
+      </span>
+    </div>
+    {% endif %}
+
+    {% if job.tags %}
+    <div class="job-detail__meta-item job-detail__meta-item--wide">
+      <span class="job-detail__meta-label">Tags</span>
+      <div class="tag-group">
+        {% for tag in job.tags %}
+        <span class="tag tag--pill">{{ tag }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <section class="job-detail__body">
+    <h2>Overview</h2>
+    <p>
+      {% if job.summary %}
+        {{ job.summary }}
+      {% else %}
+        Full description is available on the company career site. We’ve pulled the key metadata and scoring for you here.
+      {% endif %}
+    </p>
+  </section>
+
+  {% if job.url %}
+  <div class="job-detail__actions">
+    <a
+      class="btn btn-primary"
+      href="{{ job.url }}"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      View job on company site →
+    </a>
+  </div>
+  {% endif %}
+</section>
+
+{% endblock %}

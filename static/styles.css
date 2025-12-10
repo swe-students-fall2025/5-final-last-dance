@@ -195,6 +195,19 @@ main {
   position: relative;
 }
 
+.card__overlay-link {
+  position: absolute;
+  inset: 0;
+  display: block;
+  text-decoration: none;
+  z-index: 5;        
+}
+
+.card__favorite {
+  position: relative;
+  z-index: 10;
+}
+
 .card h3 {
   margin: 0;
   font-size: 1.35rem;
@@ -434,6 +447,111 @@ main {
   margin-top: 0.5rem;
 }
 
+.cards--recommendations .card {
+  padding: 1.2rem 1.4rem 1rem;  
+  gap: 0.4rem;                  
+}
+
+.cards--recommendations .card h3 {
+  margin: 0.1rem 0 0.05rem;
+  line-height: 1.25;           
+}
+
+.cards--recommendations .card__summary,
+.cards--recommendations .card__location {
+  margin-top: 0.1rem;
+}
+
+.cards--recommendations .card__footer {
+  display: flex;
+  justify-content: space-between;  
+  align-items: center;
+  margin-top: 0.8rem;
+}
+
+.cards--recommendations .card__footer .tag--soft {
+  flex-shrink: 0;                 
+}
+
+.cards--recommendations .card__posted {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-left: 0.75rem;
+}
+
+.cards--board .card__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.7rem;
+}
+
+.cards--board .card__posted {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* ================================
+   Live job board cards
+   ================================ */
+
+.cards--board .card--board {
+  padding: 1.4rem 1.5rem;
+  gap: 0.55rem;              
+  min-height: 240px;         
+}
+
+.cards--board .card--board > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.3rem;
+}
+
+.cards--board .card--board h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  line-height: 1.25;
+}
+
+.cards--board .card--board header .tag--secondary {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+}
+
+.cards--board .card__summary {
+  margin: 0.1rem 0 0.25rem 0;
+  font-size: 0.95rem;
+}
+
+.cards--board .card__location {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.cards--board .tag-group {
+  margin-top: 0.35rem;
+}
+
+.cards--board .card__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.85rem;
+}
+
+.cards--board .card__footer .tag--soft {
+  flex-shrink: 0;
+}
+
+.cards--board .card__footer .card__posted,
+.cards--board .card__footer .card__match {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
 @media (max-width: 760px) {
   .home-intro {
     flex-direction: column;
@@ -446,6 +564,118 @@ main {
 
   .section-heading--row {
     flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* ================================
+   Job Detail Page
+   ================================ */
+
+.job-detail {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.job-detail__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.job-detail__company {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin-bottom: 0.25rem;
+}
+
+.job-detail__title {
+  font-size: 1.8rem;
+  line-height: 1.2;
+  margin: 0 0 0.4rem;
+}
+
+.job-detail__location {
+  color: var(--muted);
+}
+
+.job-detail__meta-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+}
+
+.job-detail__meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem 1.5rem;
+  margin-bottom: 1.75rem;
+}
+
+.job-detail__meta-item--wide {
+  grid-column: 1 / -1;
+}
+
+.job-detail__meta-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 0.15rem;
+}
+
+.job-detail__meta-value {
+  font-weight: 500;
+}
+
+.job-detail__body h2 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.job-detail__body p {
+  line-height: 1.5;
+}
+
+.job-detail__actions {
+  margin-top: 1.75rem;
+}
+
+.card__title-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.card__title-link:hover {
+  text-decoration: underline;
+}
+
+.job-detail__nav {
+  max-width: 720px;
+  margin: 0 auto 1rem;
+}
+
+.link-back {
+  font-size: 0.9rem;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.link-back:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 760px) {
+  .job-detail__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .job-detail__meta-pill {
     align-items: flex-start;
   }
 }
