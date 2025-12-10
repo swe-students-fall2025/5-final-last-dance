@@ -13,7 +13,6 @@ class TestHomeRoute:
         """Test that home route returns 200 status code."""
         test_client, mock_db, _ = client
         
-        #not real mongo database connection yet
         mock_db.jobs.find.return_value.sort.return_value = iter([])
         mock_db.company_preferences.find.return_value = iter([])
         mock_db.location_preferences.find.return_value = iter([])
@@ -134,7 +133,6 @@ class TestPreferencesSubmission:
         """Test saving company preferences."""
         test_client, mock_db, _ = client
         
-        #not real mongo database connection yet
         mock_db.company_preferences.delete_many.return_value = MagicMock()
         mock_db.company_preferences.insert_one.return_value = MagicMock()
         

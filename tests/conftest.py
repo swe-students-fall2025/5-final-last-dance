@@ -9,7 +9,6 @@ from pymongo.errors import ConnectionFailure
 @pytest.fixture
 def app():
     """Create and configure a test Flask app."""
-    #not real mongo database connection yet
     with patch('pymongo.MongoClient') as mock_client:
         mock_db = MagicMock()
         mock_client.return_value.admin.command.return_value = None
