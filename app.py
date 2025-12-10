@@ -80,12 +80,7 @@ LOCATIONS = [
 
 JOB_TYPES = ["Full-time", "Part-time", "Contract", "Internship"]
 
-TIERS = [
-    {"value": 1, "label": "Target"},
-    {"value": 2, "label": "Good"},
-    {"value": 3, "label": "Safety"},
-    {"value": 4, "label": "Not at all"},
-]
+TIERS = [1, 2, 3, 4, 5]
 
 DEFAULT_TIER = 3
 
@@ -194,13 +189,14 @@ def load_jobs_from_csv(path: str, company_name: str):
 
 def _tier_multiplier(rank: int) -> int:
     """
-    Map preference tier to multiplier:
-      1 (Target)     -> strong positive
-      2 (Good)       -> medium positive
-      3 (Safety)     -> small positive
-      4 (Not at all) -> negative
+    Map preference tier to multiplier (1 is highest priority):
+      1 (Top Priority)    -> strongest positive
+      2 (High Priority)   -> strong positive
+      3 (Medium Priority) -> medium positive
+      4 (Low Priority)    -> small positive
+      5 (Not Interested)  -> negative
     """
-    mapping = {1: 3, 2: 2, 3: 1, 4: -2}
+    mapping = {1: 4, 2: 3, 3: 2, 4: 1, 5: -2}
     return mapping.get(rank, 0)
 
 
@@ -634,7 +630,7 @@ def create_app():
 
         for company in COMPANIES:
             tier = request.form.get(f"company_{company}", str(DEFAULT_TIER))
-            if tier.isdigit() and 1 <= int(tier) <= 4:
+            if tier.isdigit() and 1 <= int(tier) <= 5:
                 db.company_preferences.insert_one(
                     {
                         "user_id": user_id,
@@ -663,7 +659,7 @@ def create_app():
 
         for role in ROLES:
             tier = request.form.get(f"role_{role}", str(DEFAULT_TIER))
-            if tier.isdigit() and 1 <= int(tier) <= 4:
+            if tier.isdigit() and 1 <= int(tier) <= 5:
                 db.role_preferences.insert_one(
                     {
                         "user_id": user_id,
@@ -692,7 +688,7 @@ def create_app():
 
         for location in LOCATIONS:
             tier = request.form.get(f"location_{location}", str(DEFAULT_TIER))
-            if tier.isdigit() and 1 <= int(tier) <= 4:
+            if tier.isdigit() and 1 <= int(tier) <= 5:
                 db.location_preferences.insert_one(
                     {
                         "user_id": user_id,
