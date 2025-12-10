@@ -181,7 +181,6 @@ def load_jobs_from_csv(path: str, company_name: str):
             job = {
                 "title": title,
                 "location": location,
-                "primary_location": primary_location or location,
                 "department": department,
                 "job_id": job_id,
                 "url": url,
@@ -251,7 +250,7 @@ def score_jobs_for_user(db, user_id: str, jobs, mark_favorites=False):
             rank = company_prefs[company]
             score += _tier_multiplier(rank) * 22
 
-        location = job.get("primary_location") or job.get("location")
+        location = job.get("location")
         if location in location_prefs:
             rank = location_prefs[location]
             score += _tier_multiplier(rank) * 18
