@@ -18,8 +18,15 @@
       <nav class="nav-links">
         <a href="{{ url_for('home') }}">Home</a>
         <a href="{{ url_for('jobs') }}">Live jobs</a>
-        <!-- TODO: Replace testuser with session user when auth is integrated -->
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('preferences') }}">Preferences</a>
+        <a href="{{ url_for('profile') }}">Saved roles</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+        {% else %}
         <a href="{{ url_for('preferences', user_id='testuser') }}">Preferences</a>
+        <a href="{{ url_for('login') }}">Login</a>
+        <a href="{{ url_for('register') }}">Register</a>
+        {% endif %}
       </nav>
     </aside>
 
@@ -45,11 +52,6 @@
           <a href="{{ url_for('preferences', user_id='testuser') }}" class="btn-secondary">
             Edit preferences
           </a>
-          {% else %}
-          <a href="{{ url_for('register') }}" class="btn-secondary">
-            Get started
-          </a>
-          {% endif %}
         </div>
 
         <div class="hero__meta">

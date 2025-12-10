@@ -20,7 +20,8 @@ def app():
         from app import create_app
         app = create_app()
         app.config['TESTING'] = True
-        
+        app.config['ALLOW_USERID_PREFERENCES_ENDPOINTS'] = True
+
         return app, mock_db, mock_client
 
 

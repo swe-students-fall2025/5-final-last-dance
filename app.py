@@ -26,6 +26,7 @@ from flask_login import (
 import pymongo
 from bson.objectid import ObjectId
 from dotenv import load_dotenv
+from urllib.parse import quote
 from werkzeug.security import generate_password_hash, check_password_hash
 
 load_dotenv()
@@ -237,7 +238,8 @@ def score_jobs_for_user(db, user_id: str, jobs, mark_favorites=False):
         score = 0
 
         raw_company = job.get("company") or "Unknown"
-        identifier = job.get("job_id") or job.get("url") or str(job.get("_id", ""))
+        raw_identifier = job.get("job_id") or job.get("url") or str(job.get("_id", ""))
+        identifier = quote(raw_identifier, safe="")
         job["identifier"] = identifier
         job["company_slug"] = raw_company.lower().replace(" ", "-")
 
@@ -626,11 +628,11 @@ def create_app():
             job_type_prefs=job_type_prefs.get("types", []) if job_type_prefs else [],
         )
 
-    @app.route("/preferences/companies", methods=["POST"])
-    @login_required
-    def save_company_preferences():
-        """Save company preferences."""
-        user_id = current_user.id
+    def _allow_userid_preferences():
+        if not app.config.get("ALLOW_USERID_PREFERENCES_ENDPOINTS", False):
+            abort(404)
+
+    def _save_company_preferences(user_id: str):
         now = datetime.datetime.now(timezone.utc)
         db.company_preferences.delete_many({"user_id": user_id})
 
@@ -648,11 +650,18 @@ def create_app():
 
         return redirect(url_for("preferences", tab="companies"))
 
-    @app.route("/preferences/roles", methods=["POST"])
+    @app.route("/preferences/companies", methods=["POST"])
     @login_required
-    def save_role_preferences():
-        """Save role preferences."""
-        user_id = current_user.id
+    def save_company_preferences():
+        """Save company preferences."""
+        return _save_company_preferences(current_user.id)
+
+    @app.route("/preferences/<user_id>/companies", methods=["POST"])
+    def save_company_preferences_for_user(user_id):
+        _allow_userid_preferences()
+        return _save_company_preferences(user_id)
+
+    def _save_role_preferences(user_id: str):
         now = datetime.datetime.now(timezone.utc)
         db.role_preferences.delete_many({"user_id": user_id})
 
@@ -670,11 +679,18 @@ def create_app():
 
         return redirect(url_for("preferences", tab="roles"))
 
-    @app.route("/preferences/locations", methods=["POST"])
+    @app.route("/preferences/roles", methods=["POST"])
     @login_required
-    def save_location_preferences():
-        """Save location preferences."""
-        user_id = current_user.id
+    def save_role_preferences():
+        """Save role preferences."""
+        return _save_role_preferences(current_user.id)
+
+    @app.route("/preferences/<user_id>/roles", methods=["POST"])
+    def save_role_preferences_for_user(user_id):
+        _allow_userid_preferences()
+        return _save_role_preferences(user_id)
+
+    def _save_location_preferences(user_id: str):
         now = datetime.datetime.now(timezone.utc)
         db.location_preferences.delete_many({"user_id": user_id})
 
@@ -692,11 +708,18 @@ def create_app():
 
         return redirect(url_for("preferences", tab="locations"))
 
-    @app.route("/preferences/job_types", methods=["POST"])
+    @app.route("/preferences/locations", methods=["POST"])
     @login_required
-    def save_job_type_preferences():
-        """Save job type preferences."""
-        user_id = current_user.id
+    def save_location_preferences():
+        """Save location preferences."""
+        return _save_location_preferences(current_user.id)
+
+    @app.route("/preferences/<user_id>/locations", methods=["POST"])
+    def save_location_preferences_for_user(user_id):
+        _allow_userid_preferences()
+        return _save_location_preferences(user_id)
+
+    def _save_job_type_preferences(user_id: str):
         selected_job_types = request.form.getlist("job_types")
 
         now = datetime.datetime.now(timezone.utc)
@@ -707,6 +730,17 @@ def create_app():
             )
 
         return redirect(url_for("preferences", tab="job_types"))
+
+    @app.route("/preferences/job_types", methods=["POST"])
+    @login_required
+    def save_job_type_preferences():
+        """Save job type preferences."""
+        return _save_job_type_preferences(current_user.id)
+
+    @app.route("/preferences/<user_id>/job_types", methods=["POST"])
+    def save_job_type_preferences_for_user(user_id):
+        _allow_userid_preferences()
+        return _save_job_type_preferences(user_id)
 
     def _header_metrics(user_id: str):
         # Anything NOT tier 4 ("Not at all") counts as "tracked"
