@@ -37,9 +37,9 @@
             <label>{{ company }}</label>
             <select name="company_{{ company }}">
               {% for tier in tiers %}
-              <option value="{{ tier.value }}" 
-                      {% if company_prefs.get(company, default_tier) == tier.value %}selected{% endif %}>
-                {{ tier.label }}
+              <option value="{{ tier }}" 
+                      {% if company_prefs.get(company, default_tier) == tier %}selected{% endif %}>
+                {{ tier }}
               </option>
               {% endfor %}
             </select>
@@ -63,9 +63,9 @@
             <label>{{ role }}</label>
             <select name="role_{{ role }}">
               {% for tier in tiers %}
-              <option value="{{ tier.value }}" 
-                      {% if role_prefs.get(role, default_tier) == tier.value %}selected{% endif %}>
-                {{ tier.label }}
+              <option value="{{ tier }}" 
+                      {% if role_prefs.get(role, default_tier) == tier %}selected{% endif %}>
+                {{ tier }}
               </option>
               {% endfor %}
             </select>
@@ -89,9 +89,9 @@
             <label>{{ location }}</label>
             <select name="location_{{ location }}">
               {% for tier in tiers %}
-              <option value="{{ tier.value }}" 
-                      {% if location_prefs.get(location, default_tier) == tier.value %}selected{% endif %}>
-                {{ tier.label }}
+              <option value="{{ tier }}" 
+                      {% if location_prefs.get(location, default_tier) == tier %}selected{% endif %}>
+                {{ tier }}
               </option>
               {% endfor %}
             </select>

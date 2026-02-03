@@ -1,4 +1,4 @@
-[![Build and Deploy Flask App](https://github.com/swe-students-fall2025/5-final-last-dance/actions/workflows/flask-app.yml/badge.svg?branch=main)](https://github.com/swe-students-fall2025/5-final-last-dance/actions/workflows/flask-app.yml) [![Test Coverage](https://codecov.io/gh/swe-students-fall2025/5-final-last-dance/branch/main/graph/badge.svg?flag=codecov-umbrella)](https://codecov.io/gh/swe-students-fall2025/5-final-last-dance)
+[![Build and Deploy Flask App](https://github.com/swe-students-fall2025/5-final-last-dance/actions/workflows/flask-app.yml/badge.svg?branch=main)](https://github.com/swe-students-fall2025/5-final-last-dance/actions/workflows/flask-app.yml)
 
 # MAMG Tracker
 
