@@ -8,20 +8,6 @@ MAMG Tracker — Final Project (SWE)
 
 MAMG Tracker aggregates job listings from Meta, Apple, Microsoft, Amazon, and Google, then ranks them based on your preferences. We built this because job hunting across multiple company sites is tedious. The app scrapes listings daily, scores each job against what you're looking for, and shows you the best matches first.
 
-Live website: http://143.198.26.255/
-
-## Contributors
-
-**- [Alif](https://github.com/Alif-4)**
-
-**- [Alfardil](https://github.com/alfardil)**
-
-**- [Abdul](https://github.com/amendahawi)**
-
-**- [Sam](https://github.com/SamRawdon)**
-
-**- [Galal](https://github.com/gkbichara)**
-
 # FEATURES
 
 ## Web App
@@ -51,6 +37,14 @@ Live website: http://143.198.26.255/
 * Docker (optional)
 * Chrome/Chromium (for scrapers)
 
+Create a `.env` file:
+```
+MONGO_DBNAME=proj5User
+MONGO_URI=mongodb+srv://proj5User:Srkski2K5e0zgV6P@cluster0.handmek.mongodb.net/?appName=Cluster0
+FLASK_ENV=development
+FLASK_APP=app.py
+```
+
 ## Running the App
 
 ```bash
@@ -78,11 +72,11 @@ Each scraper updates its CSV file in `scrapers/data/`.
 ## Docker
 
 ```bash
-docker pull alfardil28/last-dance-job-board
+docker pull alfardil28/pitchdeck
 docker run -p 5000:5000 \
   -e MONGO_URI="your_mongo_uri" \
   -e MONGO_DBNAME="mamg_tracker" \
-  alfardil28/last-dance-job-board
+  alfardil28/pitchdeck
 ```
 
 # TESTING
@@ -153,6 +147,20 @@ We use GitHub Actions for CI/CD:
 
 ---
 
+## Contributors
+
+**- [Alif](https://github.com/Alif-4)**
+
+**- [Alfardil](https://github.com/alfardil)**
+
+**- [Abdul](https://github.com/amendahawi)**
+
+**- [Sam](https://github.com/SamRawdon)**
+
+**- [Galal](https://github.com/gkbichara)**
+
+---
+
 ## Docker Hub
 
-[alfardil28/last-dance-job-board](https://hub.docker.com/r/alfardil28/last-dance-job-board)
+[alfardil28/pitchdeck](https://hub.docker.com/r/alfardil28/pitchdeck)
